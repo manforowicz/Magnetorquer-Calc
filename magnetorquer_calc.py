@@ -29,14 +29,15 @@ def length_of_spiral(a, b, theta):
 def area_sum_of_spiral(a, b, theta):
     return integrate.quad(lambda t: 0.5*(a - b*t)**2, 0, theta)[0]
 
-def spacing_from_length(length, outer_layer):
 
+def spacing_from_length(length, outer_layer):
     if outer_layer:
         thickness_in_oz = config.getfloat("OuterLayerThickness")
     else:
         thickness_in_oz = config.getfloat("InnerLayerThickness")
-    
-    thickness_in_m = thickness_in_oz * config.getfloat("TraceThicknessPerOz")/1000
+
+    thickness_in_m = thickness_in_oz * \
+        config.getfloat("TraceThicknessPerOz")/1000
 
     coefficient = config.getfloat("CopperResistivity") / thickness_in_m
 
@@ -63,6 +64,7 @@ def max_trace_length(spacing_from_length):
 #
 # Returns: Number of coils, inner radius of spiral, sum of coil areas
 def properties_of_spiral(length, spacing):
+
     a = config.getfloat("OuterRadius")
     b = spacing / (2 * math.pi)
 
@@ -86,11 +88,11 @@ def properties_of_spiral(length, spacing):
 
 
 # Finds trace length tha maximizes area-sum
-def find_max_area_sum():
+def find_max_area_sum(outer_layer):
 
     # Dummy function to meet requirements of `optimize.minimize_scalar`
     def neg_area_sum_from_length(length):
-        s = spacing_from_length(length, True)
+        s = spacing_from_length(length, outer_layer)
         return -properties_of_spiral(length, s)[2]
 
     max_length = max_trace_length(spacing_from_length)
@@ -102,7 +104,7 @@ def find_max_area_sum():
     ).x
 
     # Calculate data from the optimal length
-    spacing = spacing_from_length(length, True)
+    spacing = spacing_from_length(length, outer_layer)
     optimal = properties_of_spiral(length, spacing)
 
     KiCad_spiral.save_curve_kicad(config.getfloat(
@@ -113,17 +115,17 @@ def find_max_area_sum():
     print(
         "--- The following length maximizes the area sum of coils. ---\n")
     print(
-        "Length of trace (cm):                        {:.4f}\n".format(length))
+        "Length of trace (mm):                        {:.4f}\n".format(length))
     print(
-        "Center-to-center spacing between coils (cm): {:.4f}\n".format(spacing))
+        "Center-to-center spacing between coils (mm): {:.4f}\n".format(spacing))
     print(
-        "Inner radius (cm):                           {:.4f}\n".format(optimal[1]))
+        "Inner radius (mm):                           {:.4f}\n".format(optimal[1]))
     print(
         "Inner radius / Outer radius:                 {:.4f}\n".format(optimal[1] / config.getfloat('OuterRadius')))
     print(
         "Number of coils (#):                         {:.4f}\n".format(optimal[0]))
     print(
-        "Area sum of coils (cm^2):                    {:.4f}\n".format(optimal[2]))
+        "Area sum of coils (m^2):                    {:.4f}\n".format(optimal[2] * 1e-6))
 
 
 # Draws a nice little graph
@@ -171,5 +173,5 @@ config = config['Configuration']
 ### BEGIN ###
 if __name__ == "__main__":
     # test_func_properties_of_spiral()
-    find_max_area_sum()
+    find_max_area_sum(True)
     draw_graph()
