@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import integrate
 from scipy import optimize
+from pathlib import Path
+import configparser
 
 import KiCad_spiral
 
@@ -27,14 +29,29 @@ def length_of_spiral(a, b, theta):
 def area_sum_of_spiral(a, b, theta):
     return integrate.quad(lambda t: 0.5*(a - b*t)**2, 0, theta)[0]
 
+def spacing_from_length(length, outer_layer):
+
+    if outer_layer:
+        thickness_in_oz = config.getfloat("OuterLayerThickness")
+    else:
+        thickness_in_oz = config.getfloat("InnerLayerThickness")
+    
+    thickness_in_m = thickness_in_oz * config.getfloat("TraceThicknessPerOz")/1000
+
+    coefficient = config.getfloat("CopperResistivity") / thickness_in_m
+
+    trace_width = length / config.getfloat("Resistance") * coefficient
+
+    return trace_width + config.getfloat("GapBetweenTraces")  # Millimeters
+
 
 # Returns max trace length physically possible.
 # Takes outer radius and a function that defines spacing
-def max_trace_length(outer_radius, spacing_from_length):
+def max_trace_length(spacing_from_length):
 
     def inner_radius_from_length(length):
-        s = spacing_from_length(length)
-        return properties_of_spiral(outer_radius, length, s)[1]
+        s = spacing_from_length(length, True)
+        return properties_of_spiral(length, s)[1]
 
     return optimize.brentq(inner_radius_from_length, 0, 1e9)
 
@@ -45,12 +62,12 @@ def max_trace_length(outer_radius, spacing_from_length):
 # - spacing: distance between centers of adjacent coils
 #
 # Returns: Number of coils, inner radius of spiral, sum of coil areas
-def properties_of_spiral(outer_radius, length, spacing):
-    a = outer_radius
+def properties_of_spiral(length, spacing):
+    a = config.getfloat("OuterRadius")
     b = spacing / (2 * math.pi)
 
     if b == 0:  # If b is 0 we have a perfect circle
-        theta = length / outer_radius  # Circle arc length formula
+        theta = length / a  # Circle arc length formula
     else:
         # a/b gives theta that results in 0 inner radius
         # If user gives a greater length, use that (even though it physically won't fit)
@@ -73,10 +90,10 @@ def find_max_area_sum():
 
     # Dummy function to meet requirements of `optimize.minimize_scalar`
     def neg_area_sum_from_length(length):
-        s = spacing_from_length(length)
-        return -properties_of_spiral(OUTER_RADIUS, length, s)[2]
+        s = spacing_from_length(length, True)
+        return -properties_of_spiral(length, s)[2]
 
-    max_length = max_trace_length(OUTER_RADIUS, spacing_from_length)
+    max_length = max_trace_length(spacing_from_length)
     # Finds length that gives maximum area-sum
     length = optimize.minimize_scalar(
         neg_area_sum_from_length,
@@ -85,10 +102,11 @@ def find_max_area_sum():
     ).x
 
     # Calculate data from the optimal length
-    spacing = spacing_from_length(length)
-    optimal = properties_of_spiral(OUTER_RADIUS, length, spacing)
+    spacing = spacing_from_length(length, True)
+    optimal = properties_of_spiral(length, spacing)
 
-    KiCad_spiral.save_curve_kicad(OUTER_RADIUS*10, spacing*10, optimal[0], (spacing-GAP_BETWEEN_TRACE_EDGES)*10)
+    KiCad_spiral.save_curve_kicad(config.getfloat(
+        'OuterRadius'), spacing, optimal[0], (spacing-config.getfloat("GapBetweenTraces"))*10)
     print("Saved optimzed spiral SVG to current directory.\n")
 
     # Print data
@@ -101,24 +119,23 @@ def find_max_area_sum():
     print(
         "Inner radius (cm):                           {:.4f}\n".format(optimal[1]))
     print(
-        "Inner radius / Outer radius:                 {:.4f}\n".format(optimal[1] / OUTER_RADIUS))
+        "Inner radius / Outer radius:                 {:.4f}\n".format(optimal[1] / config.getfloat('OuterRadius')))
     print(
         "Number of coils (#):                         {:.4f}\n".format(optimal[0]))
     print(
         "Area sum of coils (cm^2):                    {:.4f}\n".format(optimal[2]))
 
-    
 
 # Draws a nice little graph
 def draw_graph():
     length_array = []
     area_sum_array = []
 
-    max_length = max_trace_length(OUTER_RADIUS, spacing_from_length)
+    max_length = max_trace_length(spacing_from_length)
     for length in np.linspace(0, max_length, 50):
 
-        spacing = spacing_from_length(length)
-        area_sum = properties_of_spiral(OUTER_RADIUS, length, spacing)[2]
+        spacing = spacing_from_length(length, True)
+        area_sum = properties_of_spiral(length, spacing)[2]
 
         length_array.append(length)
         area_sum_array.append(area_sum)
@@ -129,6 +146,7 @@ def draw_graph():
     plt.show()
 
 
+'''
 def test_func_properties_of_spiral():
     # Circle with 2 coils.
     result = properties_of_spiral(1, 4 * math.pi, 0)
@@ -142,27 +160,16 @@ def test_func_properties_of_spiral():
     assert abs(result[1] - 8.2568) < 0.001
 
     print("All tests passed!\n")
+'''
 
 
-### TWEAKABLES ####
-
-# Define this function to return spacing that ensures resistance stays constant given length
-def spacing_from_length(length):
-    trace_width = length / DESIRED_RESISTANCE * 5.086e-4
-    return trace_width + GAP_BETWEEN_TRACE_EDGES  # centimeters
-
-
-# Centimeters
-OUTER_RADIUS = 4
-
-# OHMS (Note: If both front and back of PCB is used, total resistance doubles)
-DESIRED_RESISTANCE = 10
-
-# Centimeters
-GAP_BETWEEN_TRACE_EDGES = 0.013
+# Read configuration
+config = configparser.ConfigParser()
+config.read(Path(__file__).with_name('config.ini'))
+config = config['Configuration']
 
 ### BEGIN ###
 if __name__ == "__main__":
-    test_func_properties_of_spiral()
+    # test_func_properties_of_spiral()
     find_max_area_sum()
     draw_graph()
