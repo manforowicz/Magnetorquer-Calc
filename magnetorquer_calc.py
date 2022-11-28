@@ -73,7 +73,7 @@ def properties_of_spiral(length, spacing):
     else:
         # a/b gives theta that results in 0 inner radius
         # If user gives a greater length, use that (even though it physically won't fit)
-        max_theta = max(length, a/b)
+        max_theta = max(length/b, a/b)
 
         # Use math to find theta that gives a spiral of the desired length
         theta = optimize.brentq(
