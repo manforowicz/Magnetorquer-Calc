@@ -30,6 +30,7 @@ def area_sum_of_spiral(a, b, theta):
     return integrate.quad(lambda t: 0.5*(a - b*t)**2, 0, theta)[0]
 
 
+# Returns spacing of trace needed to give desired resistance
 def spacing_from_length(length, resistance, outer_layer):
     if outer_layer:
         thickness_in_oz = config.getfloat("OuterLayerThickness")
@@ -86,6 +87,32 @@ def properties_of_spiral(length, spacing):
 
     return num_of_coils, inner_radius, area_sum
 
+def properties_of_square_spiral(length, spacing, r):
+    l = length
+    #r = config.getfloat("OuterRadius")
+    s = spacing
+    
+    dist = r*2
+    area_sum = r**2
+
+    #dist = 0
+    #area_sum = 0
+
+    while dist < length:
+        dist += 4*r
+        area_sum += 2 * r**2
+
+        r -= s/2
+
+    if dist - length > 2*r:
+        area_sum -= r ** 2
+        dist -= 2*r
+    
+    area_sum -= (dist - length) * r / 2
+
+    
+    return area_sum
+
 
 # Finds trace length tha maximizes area-sum
 def find_optimal_spiral(resistance, outer_layer):
@@ -113,14 +140,14 @@ def find_optimal_spiral(resistance, outer_layer):
 
 def inner_resistance_from_front_resistance(front_resistance):
     return (
-            (config.getfloat("Resistance") - 2 * front_resistance) /
-            (config.getint("NumberOfLayers") - 2)
-            )
+        (config.getfloat("Resistance") - 2 * front_resistance) /
+        (config.getint("NumberOfLayers") - 2)
+    )
 
 
 def find_total_area_sum_from_front_resistance(front_resistance):
     inner_resistance = inner_resistance_from_front_resistance(front_resistance)
-    inner_layers = config.getint("NumberOfLayers") -2
+    inner_layers = config.getint("NumberOfLayers") - 2
 
     area_sum = 0
     area_sum += 2 * find_optimal_spiral(front_resistance, True)[2]
@@ -135,7 +162,6 @@ def optimal_magnetorquer_front_resistance():
         method='bounded'
     ).x
     return front_resistance
-    
 
 
 '''
@@ -181,6 +207,10 @@ config = configparser.ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
+
+print(properties_of_square_spiral(20, 1, 2))
+
+'''
 ### BEGIN ###
 if __name__ == "__main__":
     print("Calculating...")
@@ -189,11 +219,15 @@ if __name__ == "__main__":
 
     front_resistance = optimal_magnetorquer_front_resistance()
     inner_resistance = inner_resistance_from_front_resistance(front_resistance)
-    out_spacing, out_num_of_coils, _ = find_optimal_spiral(front_resistance, True)
-    in_spacing, in_num_of_coils, _ = find_optimal_spiral(inner_resistance, False)
+    
+    out_spacing, out_num_of_coils, _ = find_optimal_spiral(
+        front_resistance, True)
+    
+    in_spacing, in_num_of_coils, _ = find_optimal_spiral(
+        inner_resistance, False)
 
     KiCad_spiral.save_magnetorquer(config.getint("NumberOfLayers"), config.getfloat("OuterRadius"),
-                        out_spacing, out_num_of_coils, out_spacing - config.getfloat("GapBetweenTraces"),
-                        in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))
-
-
+                                   out_spacing, out_num_of_coils, out_spacing -
+                                   config.getfloat("GapBetweenTraces"),
+                                   in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))
+'''

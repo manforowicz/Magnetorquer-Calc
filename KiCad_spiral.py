@@ -36,7 +36,8 @@ def get_spiral(outer_radius, spacing, num_of_coils, stroke_width, layer, reverse
     p1 = get_cartesian_coords(a+5, b, 0)
 
     for theta in np.arange(0, theta, math.pi/16):
-        if reverse: theta *= -1
+        if reverse:
+            theta *= -1
         p2 = get_cartesian_coords(a, b, theta)
         text += add_segment(p1, p2, stroke_width, layer, net)
         p1 = p2
@@ -59,10 +60,9 @@ def save_magnetorquer(num_of_layers, outer_radius,
     for i in range(num_of_layers - 2):
         layer = "In" + str(i+1) + ".Cu"
         f.write(get_spiral(outer_radius, in_spacing,
-                in_num_of_coils, in_stroke_width, layer, i%2==0))
-    
+                in_num_of_coils, in_stroke_width, layer, i % 2 == 0))
 
     f.write(get_spiral(outer_radius, out_spacing,
-            out_num_of_coils, out_stroke_width, "B.Cu", num_of_layers%2==0))
-    
+            out_num_of_coils, out_stroke_width, "B.Cu", num_of_layers % 2 == 0))
+
     f.close()
