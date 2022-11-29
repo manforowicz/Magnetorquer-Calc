@@ -106,54 +106,35 @@ def find_optimal_spiral(resistance, outer_layer):
     # Calculate data from the optimal length
     spacing = spacing_from_length(length, resistance, outer_layer)
     optimal = properties_of_spiral(length, spacing)
-    '''
-    KiCad_spiral.save_curve_kicad(config.getfloat(
-        'OuterRadius'), spacing, optimal[0], (spacing-config.getfloat("GapBetweenTraces"))*10)
-    print("Saved optimzed spiral SVG to current directory.\n")
 
-    # Print data
-    print(
-        "--- The following length maximizes the area sum of coils. ---\n")
-    print(
-        "Length of trace (mm):                        {:.4f}\n".format(length))
-    print(
-        "Center-to-center spacing between coils (mm): {:.4f}\n".format(spacing))
-    print(
-        "Inner radius (mm):                           {:.4f}\n".format(optimal[1]))
-    print(
-        "Inner radius / Outer radius:                 {:.4f}\n".format(optimal[1] / config.getfloat('OuterRadius')))
-    print(
-        "Number of coils (#):                         {:.4f}\n".format(optimal[0]))
-    print(
-        "Area sum of coils (m^2):                    {:.4f}\n".format(optimal[2] * 1e-6))
-    '''
-    return length, spacing, optimal[2]
+    # Return coil spacing, number of coils, and area-sum
+    return spacing, optimal[0], optimal[2]
 
 
-def inner_resistance_from_outer(outer_resistance):
+def inner_resistance_from_front_resistance(front_resistance):
     return (
-            (config.getfloat("Resistance") - 2 * outer_resistance) /
-            (config.getfloat("NumberOfLayers") - 2)
+            (config.getfloat("Resistance") - 2 * front_resistance) /
+            (config.getint("NumberOfLayers") - 2)
             )
 
 
-def find_total_area_sum_from_outer_resistance(outer_resistance):
-    inner_resistance = inner_resistance_from_outer(outer_resistance)
-    inner_layers = config.getfloat("NumberOfLayers") -2
+def find_total_area_sum_from_front_resistance(front_resistance):
+    inner_resistance = inner_resistance_from_front_resistance(front_resistance)
+    inner_layers = config.getint("NumberOfLayers") -2
 
     area_sum = 0
-    area_sum += 2 * find_optimal_spiral(outer_resistance, True)[2]
+    area_sum += 2 * find_optimal_spiral(front_resistance, True)[2]
     area_sum += inner_layers * find_optimal_spiral(inner_resistance, False)[2]
     return area_sum
 
 
-def find_optimal_magnetorquer():
-    outer_resistance = optimize.minimize_scalar(
-        lambda r: -find_total_area_sum_from_outer_resistance(r),
+def optimal_magnetorquer_front_resistance():
+    front_resistance = optimize.minimize_scalar(
+        lambda r: -find_total_area_sum_from_front_resistance(r),
         bounds=(0, config.getfloat("Resistance")/2),
         method='bounded'
     ).x
-    return outer_resistance
+    return front_resistance
     
 
 
@@ -206,6 +187,13 @@ if __name__ == "__main__":
     # test_func_properties_of_spiral()
     #find_optimal_spiral(config.getfloat('Resistance'), True)
 
-    print(find_optimal_magnetorquer())
+    front_resistance = optimal_magnetorquer_front_resistance()
+    inner_resistance = inner_resistance_from_front_resistance(front_resistance)
+    out_spacing, out_num_of_coils, _ = find_optimal_spiral(front_resistance, True)
+    in_spacing, in_num_of_coils, _ = find_optimal_spiral(inner_resistance, False)
+
+    KiCad_spiral.save_magnetorquer(config.getint("NumberOfLayers"), config.getfloat("OuterRadius"),
+                        out_spacing, out_num_of_coils, out_spacing - config.getfloat("GapBetweenTraces"),
+                        in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))
 
 
