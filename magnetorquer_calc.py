@@ -87,16 +87,15 @@ def properties_of_spiral(length, spacing):
 
     return num_of_coils, inner_radius, area_sum
 
-def properties_of_square_spiral(length, spacing, r):
-    l = length
-    #r = config.getfloat("OuterRadius")
+def properties_of_square_spiral(length, spacing):
+    r = config.getfloat("OuterRadius")
     s = spacing
     
     dist = r*2
     area_sum = r**2
 
-    #dist = 0
-    #area_sum = 0
+    dist = 0
+    area_sum = 0
 
     while dist < length:
         dist += 4*r
@@ -207,8 +206,10 @@ config = configparser.ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
+print(properties_of_spiral(43000, 0.02))
+print(properties_of_square_spiral(43000, 0.02))
 
-print(properties_of_square_spiral(20, 1, 2))
+
 
 '''
 ### BEGIN ###
