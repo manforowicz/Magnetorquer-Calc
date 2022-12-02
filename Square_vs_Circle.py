@@ -102,21 +102,34 @@ spacing_slider = Slider(
 )
 
 
+ax_length = fig.add_axes([0.25, 0.0, 0.65, 0.03])
+length_slider = Slider(
+    ax=ax_length,
+    label='Length range',
+    valmin=0.1,
+    valmax=10000,
+    valinit=1000,
+)
+
+
 # The function to be called anytime a slider's value changes
 def update(_):
     s = spacing_slider.val
-    lengths = np.linspace(1, 2000, 100)
+    max_l = length_slider.val
+    lengths = np.linspace(1, max_l, 100)
     areas_square = [properties_of_square_spiral(length, s, 100) for length in lengths]
     areas_circle = [properties_of_circle_spiral(length, s, 100) for length in lengths]
 
     line_square.set_offsets(np.c_[lengths, areas_square])
     line_circle.set_offsets(np.c_[lengths, areas_circle])
 
+
     fig.canvas.draw_idle()
 
 
 # register the update function with each slider
 spacing_slider.on_changed(update)
+length_slider.on_changed(update)
 
 
 plt.show()
