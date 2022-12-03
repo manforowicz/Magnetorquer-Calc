@@ -43,7 +43,21 @@ def spacing_from_length(length, resistance, outer_layer):
 # Returns max trace length physically possible.
 # Takes outer radius and a function that defines spacing
 def max_trace_length(resistance, outer_layer):
+    '''
+    Calculates the maximum length of wire that can fit on the spiral.
+    
+    Uses binary search and finds highest length that doesn't receive NaN 
+    from spirals.properties_of_square_spiral().
 
+    Paramters:
+        resistance (float - ohms): The intended resistance of the spiral.
+        outer_layer (bool): States whether spiral is on outer layer of the PCB
+                            since that influences trace thickness
+    
+    Returns:
+        max_length: Maximum length of wire that can fit on the spiral.
+
+    '''
     lower = 0
     upper = 1e6
 
@@ -57,7 +71,8 @@ def max_trace_length(resistance, outer_layer):
         else:
             lower = length_guess
     
-    return lower
+    max_length = lower
+    return max_length
 
 
 # Finds trace length tha maximizes area-sum
@@ -110,44 +125,6 @@ def optimal_magnetorquer_front_resistance():
     return front_resistance
 
 
-'''
-# Draws a nice little graph
-def draw_graph():
-    length_array = []
-    area_sum_array = []
-
-    max_length = max_trace_length(config.getfloat('resistance'), True)
-    for length in np.linspace(0, max_length, 50):
-
-        spacing = spacing_from_length(length, config.getfloat('resistance'), True)
-        area_sum = properties_of_spiral(length, spacing)[2]
-
-        length_array.append(length)
-        area_sum_array.append(area_sum)
-
-    plt.plot(length_array, area_sum_array, "-o")
-    plt.xlabel("Length of PCB trace (cm)")
-    plt.ylabel("Sum of coil areas (cm^2)")
-    plt.show()
-
-
-
-def test_func_properties_of_spiral():
-    # Circle with 2 coils.
-    result = properties_of_spiral(1, 4 * math.pi, 0)
-    assert abs(result[0] - 2) < 0.001
-    assert abs(result[1] - 1) < 0.001
-    assert abs(result[2] - 2 * math.pi) < 0.001
-
-    # Compare with results received from https://planetcalc.com/9063/
-    result = properties_of_spiral(10, 100, 1)
-    assert abs(result[0] - 1.7433) < 0.001
-    assert abs(result[1] - 8.2568) < 0.001
-
-    print("All tests passed!\n")
-'''
-
-
 
 ### BEGIN ###
 if __name__ == "__main__":
@@ -164,8 +141,10 @@ if __name__ == "__main__":
     in_spacing, in_num_of_coils, _ = find_optimal_spiral(
         inner_resistance, False)
 
+
     KiCad_spiral.save_magnetorquer(config.getint("NumberOfLayers"), config.getfloat("OuterRadius"),
                                    out_spacing, out_num_of_coils, out_spacing -
                                    config.getfloat("GapBetweenTraces"),
                                    in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))
+    
 

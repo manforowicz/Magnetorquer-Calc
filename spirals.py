@@ -14,6 +14,8 @@ config = configparser.ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
+#### ROUND FUNCTIONS ####
+
 
 def length_of_round_spiral(a: float, b: float, theta: float) -> float:
     '''
@@ -88,6 +90,8 @@ def properties_of_round_spiral(
 
     return num_of_coils, inner_radius, area_sum
 
+#### SQUARE FUNCTIONS ####
+
 
 def area_added_by_edge(radius):
     '''
@@ -122,9 +126,10 @@ def properties_of_square_spiral(
     '''
     r = outer_radius
     s = spacing
-    num_of_coils = 0
+    
 
     # Draw one additional outer edge
+    num_of_coils = 0.25
     length -= r*2
     area_sum = area_added_by_edge(r)
 
@@ -141,19 +146,17 @@ def properties_of_square_spiral(
         num_of_coils += 0.5
 
     # If overshot by more than one edge, remove that edge
-    if length < -2*r:
+    if length <= -2*r:
         area_sum -= area_added_by_edge(r)
         length += 2*r
-        num_of_coils -= 0.5
+        num_of_coils -= 0.25
 
     # Remove triangle area of overshot length
     area_sum -= -length * r / 2
 
-    # Calculate other properties
     inner_radius = r
 
     return num_of_coils, inner_radius, area_sum
-
 
 
 #### TESTS ####
@@ -161,7 +164,7 @@ def properties_of_square_spiral(
 class TestRoundSpiral(unittest.TestCase):
 
     # Circle with 2 coils.
-    def test_circle_with_two_coils(self):
+    def test_with_two_coils(self):
         result = properties_of_round_spiral(4 * math.pi, 0, 1)
         self.assertAlmostEqual(result[0], 2)
         self.assertAlmostEqual(result[1], 1)
@@ -169,10 +172,11 @@ class TestRoundSpiral(unittest.TestCase):
 
     # Compare with results received from https://planetcalc.com/9063/
 
-    def test_more_complicated_spiral(self):
+    def test_example_1(self):
         result = properties_of_round_spiral(100, 1, 10)
         self.assertAlmostEqual(result[0], 1.7432534773931)
         self.assertAlmostEqual(result[1], 8.25674652261)
+
         # self-calculated. (question validity)
         self.assertAlmostEqual(result[2], 457.73601090254937)
 
@@ -180,7 +184,7 @@ class TestRoundSpiral(unittest.TestCase):
 class TestSquareSpiral(unittest.TestCase):
 
     # Square with 2 coils.
-    def test_square_with_two_coils(self):
+    def test_with_two_coils(self):
         result = properties_of_square_spiral(16, 0, 1)
         self.assertAlmostEqual(result[0], 2)
         self.assertAlmostEqual(result[1], 1)
@@ -191,9 +195,18 @@ class TestSquareSpiral(unittest.TestCase):
     def test_example_spiral_1(self):
 
         result = properties_of_square_spiral(24, 1, 2)
-        self.assertAlmostEqual(result[0], 2)
+        self.assertAlmostEqual(result[0], 2.25)
         self.assertAlmostEqual(result[1], 0.5)
         self.assertAlmostEqual(result[2], 19)
+
+    # Draw it out to confirm!
+
+    def test_example_spiral_2(self):
+
+        result = properties_of_square_spiral(4, 1, 2)
+        self.assertAlmostEqual(result[0], 0.25)
+        self.assertAlmostEqual(result[1], 2)
+        self.assertAlmostEqual(result[2], 4)
 
 
 if __name__ == '__main__':

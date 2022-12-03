@@ -66,3 +66,7 @@ def save_magnetorquer(num_of_layers, outer_radius,
             out_num_of_coils, out_stroke_width, "B.Cu", num_of_layers % 2 == 0))
 
     f.close()
+
+    print("\nSaved optimal spiral in KiCad_spiral.txt")
+    print("Paste its entire content just before the final closing parantheses of your *.kicad_pcb file")
+    print("Save the file, and open KiCad. Your spiral should appear in the PCB editor.")
