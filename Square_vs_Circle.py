@@ -46,14 +46,15 @@ def properties_of_square_spiral(length, spacing, outer_radius):
     length -= r*2
     area_sum = r**2
 
-    while length > 0:
-        length -= 4*r
-        area_sum += 2 * r**2
+    if length > 0:
+        while length > 0:
+            length -= 4*r
+            area_sum += 2 * r**2
 
-        r -= s/2
-        if r < 0: return float('nan')
+            r -= s/2
+            if r < 0: return float('nan')
 
-    r += s/2
+        r += s/2
     if length < -2*r:
         area_sum -= r ** 2
         length += 2*r
@@ -62,26 +63,22 @@ def properties_of_square_spiral(length, spacing, outer_radius):
     
     return area_sum
 
-print("Circle:")
-print(properties_of_circle_spiral(35000, 1, 100))
-
-print("\nSquare:")
-print(properties_of_square_spiral(35000, 1, 100))
-
-
-
 
 # Define initial parameters
-init_spacing = 1
+init_spacing = 0.5
+init_length = 800
+outer_radius = 10
 
-lengths = np.linspace(1, 2000, 100)
-areas_square = [properties_of_square_spiral(length, init_spacing, 100) for length in lengths]
-areas_circle = [properties_of_circle_spiral(length, init_spacing, 100) for length in lengths]
+lengths = np.linspace(0, init_length, 50)
+areas_square = [properties_of_square_spiral(length, init_spacing, outer_radius) for length in lengths]
+areas_circle = [properties_of_circle_spiral(length, init_spacing, outer_radius) for length in lengths]
 
 # Create the figure and the line that we will manipulate
 fig, ax = plt.subplots()
-line_square = ax.scatter(lengths, areas_square)
-line_circle = ax.scatter(lengths, areas_circle)
+ax.set_title("Note: radius is set to 10 units")
+line_square = ax.scatter(lengths, areas_square, label='Square spiral')
+line_circle = ax.scatter(lengths, areas_circle, label="Circular spiral")
+ax.legend()
 
 
 
@@ -92,23 +89,23 @@ ax.set_ylabel('Area-sum')
 fig.subplots_adjust(left=0.25, bottom=0.25)
 
 # Make a horizontal slider to control the spacing.
-ax_spacing = fig.add_axes([0.25, 0.1, 0.65, 0.03])
+ax_spacing = fig.add_axes([0.25, 0.1, 0.6, 0.04])
 spacing_slider = Slider(
     ax=ax_spacing,
     label='Spacing',
-    valmin=0.1,
-    valmax=30,
+    valmin=0,
+    valmax=1,
     valinit=init_spacing,
 )
 
 
-ax_length = fig.add_axes([0.25, 0.0, 0.65, 0.03])
+ax_length = fig.add_axes([0.25, 0.05, 0.6, 0.04])
 length_slider = Slider(
     ax=ax_length,
-    label='Length range',
-    valmin=0.1,
+    label='Max length (zoom)',
+    valmin=1,
     valmax=10000,
-    valinit=1000,
+    valinit=init_length,
 )
 
 
@@ -116,13 +113,17 @@ length_slider = Slider(
 def update(_):
     s = spacing_slider.val
     max_l = length_slider.val
-    lengths = np.linspace(1, max_l, 100)
-    areas_square = [properties_of_square_spiral(length, s, 100) for length in lengths]
-    areas_circle = [properties_of_circle_spiral(length, s, 100) for length in lengths]
+    lengths = np.linspace(0, max_l, 50)
+    areas_square = [properties_of_square_spiral(length, s, outer_radius) for length in lengths]
+    areas_circle = [properties_of_circle_spiral(length, s, outer_radius) for length in lengths]
 
     line_square.set_offsets(np.c_[lengths, areas_square])
     line_circle.set_offsets(np.c_[lengths, areas_circle])
 
+    max_y = max(areas_square)
+
+    ax.set_xlim(-0.05*max_l, 1.05*max_l)
+    ax.set_ylim(-0.05*max_y, 1.05*max_y)
 
     fig.canvas.draw_idle()
 
