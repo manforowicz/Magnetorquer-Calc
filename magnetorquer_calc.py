@@ -1,61 +1,26 @@
 import math
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy import integrate
 from scipy import optimize
 from pathlib import Path
 import configparser
-
+from spirals import properties_of_square_spiral
 import KiCad_spiral
 
-#### NOTES ####
-# Goal is to find coil that maximizes area-sum under the given constraints
-# Area-sum is the sum of the areas created by each coil
-# Assuming everything else is constant, area-sum is proportional to magnetorquer's torque
+'''
+Goal is to find coil that maximizes area-sum under the given constraints
+Area-sum is the sum of the areas created by each coil
+Assuming everything else is constant, area-sum is proportional to magnetorquer's torque
 
-# Spiral used is an archimedean spiral due to its constant spacing between coils
-# Its equation is r = a - b*theta (where `a` is the outer radius, and `b` is decrease of radius per radian)
-# Any variables named a and b are referring to the coefficients in this equation
+Spiral used is a square spiral similar to an archimedean spiral
+This spiral is used due to its favorable characteristics demonstrated in square_vs_circle.py
+'''
 
-
-#### HELPER FUNCTIONS ####
 
 # Read configuration
 config = configparser.ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
-
-def length_of_round_spiral(a: float, b: float, theta: float) -> float:
-    '''
-    Returns the length of a circular archimedean spiral.
-    Proof: https://planetcalc.com/3707/
-
-    Parameters:
-        a (float): The outer radius of the spiral
-        b (float): The decrease in radius per 1 radian of rotation
-        theta (float): The number of radians
-
-    Returns:
-        Length (float): The length of the spiral
-    '''
-    return integrate.quad(lambda t: math.sqrt((a - b*t)**2 + b**2), 0, theta)[0]
-
-
-def area_sum_of_round_spiral(a: float, b: float, theta: float) -> float:
-    '''
-    Returns the sum of coil areas of a circular archimedean spiral.
-    All else constant, area-sum is proportional to magnetorquer torque.
-
-    Parameters:
-        a (float): The outer radius of the spiral
-        b (float): The decrease in radius per 1 radian of rotation
-        theta (float): The number of radians
-
-    Returns:
-        Area-sum (float): The area-sum of the spiral
-    '''
-    return integrate.quad(lambda t: 0.5*(a - b*t)**2, 0, theta)[0]
 
 
 # Returns spacing of trace needed to give desired resistance
@@ -79,58 +44,20 @@ def spacing_from_length(length, resistance, outer_layer):
 # Takes outer radius and a function that defines spacing
 def max_trace_length(resistance, outer_layer):
 
-    def inner_radius_from_length(length):
-        s = spacing_from_length(length, resistance, outer_layer)
-        return properties_of_round_spiral(length, s)[1]
+    lower = 0
+    upper = 1e6
 
-    return optimize.brentq(inner_radius_from_length, 0, 1e9)
-
-
-# Takes spiral properties:
-# - outer_radius: radius of outer coil
-# - length: total length of the spiral
-# - spacing: distance between centers of adjacent coils
-#
-# Returns: Number of coils, inner radius of spiral, sum of coil areas
-
-
-def properties_of_round_spiral(length: float, spacing: float, outer_radius: float = config.getfloat('OuterRadius')) -> float:
-    '''
-    Returns the sum of coil areas of a circular archimedean spiral.
-    All else constant, area-sum is proportional to magnetorquer torque.
-
-    Parameters:
-        length (float): The length of the spiral's line
-        spacing (float): The decrease in radius per 1 turn of rotation
-        outer_radius (float): The outer radius of the spiral
-
-    Returns:
-        Area-sum (float): The area-sum of the spiral
-    '''
-    a = outer_radius
-    b = spacing / (2 * math.pi)
-
-    if b == 0:  # If b is 0 we have a perfect circle
-        theta = length / a  # Circle arc length formula
-    else:
-        # a/b gives theta that results in 0 inner radius
-        max_theta = a / b
-
-        # If user gives a longer length, that won't fit, so return NaN
-        if length > length_of_round_spiral(a, b, max_theta):
-            return float('nan')
-
-        # Use math to find theta that gives a spiral of the desired length
-        theta = optimize.brentq(
-            lambda t: length_of_round_spiral(a, b, t) - length, 0, max_theta)
-
-    # Calculate and return other properties from theta
-    num_of_coils = theta / (2 * math.pi)
-    inner_radius = a - b*theta
-    area_sum = area_sum_of_round_spiral(a, b, theta)
-
-    return num_of_coils, inner_radius, area_sum
-
+    while upper - lower > upper*0.001:
+        
+        length_guess = (upper + lower)/2
+        s = spacing_from_length(length_guess, resistance, outer_layer)
+        
+        if math.isnan(properties_of_square_spiral(length_guess, s)[0]):
+            upper = length_guess
+        else:
+            lower = length_guess
+    
+    return lower
 
 
 # Finds trace length tha maximizes area-sum
@@ -139,7 +66,7 @@ def find_optimal_spiral(resistance, outer_layer):
     # Dummy function to meet requirements of `optimize.minimize_scalar`
     def neg_area_sum_from_length(length):
         s = spacing_from_length(length, resistance, outer_layer)
-        return -properties_of_round_spiral(length, s)[2]
+        return -properties_of_square_spiral(length, s)[2]
 
     max_length = max_trace_length(resistance, outer_layer)
     # Finds length that gives maximum area-sum
@@ -151,7 +78,7 @@ def find_optimal_spiral(resistance, outer_layer):
 
     # Calculate data from the optimal length
     spacing = spacing_from_length(length, resistance, outer_layer)
-    optimal = properties_of_round_spiral(length, spacing)
+    optimal = properties_of_square_spiral(length, spacing)
 
     # Return coil spacing, number of coils, and area-sum
     return spacing, optimal[0], optimal[2]
@@ -221,10 +148,7 @@ def test_func_properties_of_spiral():
 '''
 
 
-print(properties_of_round_spiral(43000, 0.02))
 
-
-'''
 ### BEGIN ###
 if __name__ == "__main__":
     print("Calculating...")
@@ -244,4 +168,4 @@ if __name__ == "__main__":
                                    out_spacing, out_num_of_coils, out_spacing -
                                    config.getfloat("GapBetweenTraces"),
                                    in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))
-'''
+

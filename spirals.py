@@ -4,6 +4,10 @@ from scipy import optimize
 from pathlib import Path
 import configparser
 
+'''
+Helper functions that calculate geometric properties of spirals
+'''
+
 # Read configuration
 config = configparser.ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
@@ -43,9 +47,7 @@ def area_sum_of_round_spiral(a: float, b: float, theta: float) -> float:
 
 
 def properties_of_round_spiral(
-    length,
-    spacing,
-    outer_radius = config.getfloat('OuterRadius')
+    length, spacing, outer_radius=config.getfloat('OuterRadius')
 ) -> tuple:
     '''
     Returns the sum of coil areas of a circular archimedean spiral.
@@ -55,6 +57,11 @@ def properties_of_round_spiral(
         length (float): The length of the spiral's line
         spacing (float): The decrease in radius per 1 turn of rotation
         outer_radius (float): The outer radius of the spiral
+
+    Returns:
+        num_of_coils (float): The number of coils in the spiral
+        inner_radius (float): The inner radius of the spiral
+        area_sum (float): The total area-sum of the spiral
     '''
     a = outer_radius
     b = spacing / (2 * math.pi)
@@ -81,7 +88,23 @@ def properties_of_round_spiral(
     return num_of_coils, inner_radius, area_sum
 
 
-def properties_of_square_spiral(length, spacing, outer_radius=config.getfloat('OuterRadius')) -> tuple:
+def area_added_by_edge(radius):
+    '''
+    Returns the area added by drawing an edge on a square spiral.
+
+    Parameters:
+        radius (float): The radius of the edge from the spiral's center
+
+    Returns:
+        area (float): Area added by drawing this edge on a square spiral
+    '''
+
+    return radius ** 2
+
+
+def properties_of_square_spiral(
+    length, spacing, outer_radius=config.getfloat('OuterRadius')
+) -> tuple:
     '''
     Returns the sum of coil areas of a square archimedean spiral.
     All else constant, area-sum is proportional to magnetorquer torque.
@@ -90,16 +113,21 @@ def properties_of_square_spiral(length, spacing, outer_radius=config.getfloat('O
         length (float): The length of the spiral's line
         spacing (float): The decrease in radius per 1 turn of rotation
         outer_radius (float): The outer radius of the spiral
+
+    Returns:
+        num_of_coils (float): The number of coils in the spiral
+        inner_radius (float): The inner radius of the spiral
+        area_sum (float): The total area-sum of the spiral
     '''
     r = outer_radius
     s = spacing
     num_of_coils = 0
 
-    # Draw outer edge
+    # Draw one additional outer edge
     length -= r*2
-    area_sum = r**2
+    area_sum = area_added_by_edge(r)
 
-    # Draw spiral, going to edges at a time.
+    # Draw spiral, going 2 edges at a time.
     if length > 0:
         r += s/2
     while length > 0:
@@ -108,12 +136,12 @@ def properties_of_square_spiral(length, spacing, outer_radius=config.getfloat('O
             return math.nan, math.nan, math.nan
 
         length -= 4*r
-        area_sum += 2 * r**2
+        area_sum += 2 * area_added_by_edge(r)
         num_of_coils += 0.5
 
     # If overshot by more than one edge, remove that edge
     if length < -2*r:
-        area_sum -= r ** 2
+        area_sum -= area_added_by_edge(r)
         length += 2*r
         num_of_coils -= 0.5
 
