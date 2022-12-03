@@ -2,9 +2,9 @@ import math
 import numpy as np
 from scipy import optimize
 from pathlib import Path
-import configparser
+from configparser import ConfigParser
 from spirals import properties_of_square_spiral
-import KiCad_spiral
+#import KiCad_spiral
 
 '''
 Goal is to find coil that maximizes area-sum under the given constraints
@@ -17,10 +17,9 @@ This spiral is used due to its favorable characteristics demonstrated in square_
 
 
 # Read configuration
-config = configparser.ConfigParser()
+config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
-
 
 
 # Returns spacing of trace needed to give desired resistance
@@ -45,15 +44,15 @@ def spacing_from_length(length, resistance, outer_layer):
 def max_trace_length(resistance, outer_layer):
     '''
     Calculates the maximum length of wire that can fit on the spiral.
-    
-    Uses binary search and finds highest length that doesn't receive NaN 
+
+    Uses binary search and finds highest length that doesn't receive NaN
     from spirals.properties_of_square_spiral().
 
     Paramters:
         resistance (float - ohms): The intended resistance of the spiral.
         outer_layer (bool): States whether spiral is on outer layer of the PCB
                             since that influences trace thickness
-    
+
     Returns:
         max_length (float - mm): Maximum length of wire that can fit on the spiral.
 
@@ -62,15 +61,15 @@ def max_trace_length(resistance, outer_layer):
     upper = 1e6
 
     while upper - lower > upper*0.001:
-        
+
         length_guess = (upper + lower)/2
         s = spacing_from_length(length_guess, resistance, outer_layer)
-        
+
         if math.isnan(properties_of_square_spiral(length_guess, s)[0]):
             upper = length_guess
         else:
             lower = length_guess
-    
+
     max_length = lower
     return max_length
 
@@ -85,12 +84,13 @@ def find_optimal_spiral(resistance, outer_layer):
         resistance (float - ohms): The intended resistance of the spiral.
         outer_layer (bool): States whether spiral is on outer layer of the PCB
                             since that influences trace thickness
-    
+
     Returns:
-        spacing (float - mm): Spacing between coils
         num_of_coils (float): Number of coils
         inner_radius (float - mm): Inner radius of spiral
         area_sum (float - mm^2): Area-sum of spiral
+        spacing (float - mm): Spacing between coils
+        length (float - mm): Length of PCB trace
 
     '''
     # Dummy function to meet requirements of `optimize.minimize_scalar`
@@ -111,7 +111,7 @@ def find_optimal_spiral(resistance, outer_layer):
     optimal = properties_of_square_spiral(length, spacing)
 
     # Return coil spacing, number of coils, and area-sum
-    return spacing, optimal
+    return optimal[0], optimal[1], optimal[2], spacing, length
 
 
 def inner_resistance_from_front_resistance(front_resistance):
@@ -140,24 +140,44 @@ def optimal_magnetorquer_front_resistance():
     return front_resistance
 
 
+def print_optimal_properties(p, resistance):
+    print('''
+    Number of coils:   {:.4f}
+    Inner radius (mm): {:.4f}
+    Area sum (m^2):    {:.4f}
+    Spacing (mm):      {:.4f}
+    Length (mm):       {:.4f}
+    Resistance(ohms):  {:.4f}
+    '''.format(*p[:2], 1e-6*p[2], *p[3:], resistance))
+
 
 ### BEGIN ###
 if __name__ == "__main__":
-    print("Calculating...\n\n")
+    print("Calculating...")
 
     front_resistance = optimal_magnetorquer_front_resistance()
     inner_resistance = inner_resistance_from_front_resistance(front_resistance)
+
+    out_optimal = find_optimal_spiral(
+        front_resistance, outer_layer=True)
+
+    in_optimal = find_optimal_spiral(
+        inner_resistance, outer_layer=False)
+
+    total_area_sum = 1e-6*2 * out_optimal[2] + 1e-6*(config.getfloat('NumberOfLayers') - 2) * in_optimal[2]
+
+    print("----Found area-sum maximizing PCB spiral configuration----\n")
     
-    out_spacing, out_num_of_coils, _ = find_optimal_spiral(
-        front_resistance, True)
+    print("Outer PCB spiral properties (per spiral):")
+    print_optimal_properties(out_optimal, front_resistance)
+
+    print("Inner PCB spiral properties (per spiral):")
+    print_optimal_properties(in_optimal, inner_resistance)
     
-    in_spacing, in_num_of_coils, _ = find_optimal_spiral(
-        inner_resistance, False)
+    print("Total area sum (m^2):  {:.4f}\n".format(total_area_sum))
 
 
-    KiCad_spiral.save_magnetorquer(config.getint("NumberOfLayers"), config.getfloat("OuterRadius"),
+    '''KiCad_spiral.save_magnetorquer(config.getint("NumberOfLayers"), config.getfloat("OuterRadius"),
                                    out_spacing, out_num_of_coils, out_spacing -
                                    config.getfloat("GapBetweenTraces"),
-                                   in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))
-    
-
+                                   in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))'''

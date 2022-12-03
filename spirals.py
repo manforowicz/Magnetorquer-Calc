@@ -2,7 +2,7 @@ import math
 from scipy import integrate
 from scipy import optimize
 from pathlib import Path
-import configparser
+from configparser import ConfigParser
 import unittest
 
 '''
@@ -10,7 +10,7 @@ Helper functions that calculate geometric properties of spirals
 '''
 
 # Read configuration
-config = configparser.ConfigParser()
+config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
