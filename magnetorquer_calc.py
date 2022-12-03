@@ -55,7 +55,7 @@ def max_trace_length(resistance, outer_layer):
                             since that influences trace thickness
     
     Returns:
-        max_length: Maximum length of wire that can fit on the spiral.
+        max_length (float - mm): Maximum length of wire that can fit on the spiral.
 
     '''
     lower = 0
@@ -77,7 +77,22 @@ def max_trace_length(resistance, outer_layer):
 
 # Finds trace length tha maximizes area-sum
 def find_optimal_spiral(resistance, outer_layer):
+    '''
+    Calculates the optimal properties of square spiral.
+    Optimal properties means area-sum maximizing.
 
+    Paramters:
+        resistance (float - ohms): The intended resistance of the spiral.
+        outer_layer (bool): States whether spiral is on outer layer of the PCB
+                            since that influences trace thickness
+    
+    Returns:
+        spacing (float - mm): Spacing between coils
+        num_of_coils (float): Number of coils
+        inner_radius (float - mm): Inner radius of spiral
+        area_sum (float - mm^2): Area-sum of spiral
+
+    '''
     # Dummy function to meet requirements of `optimize.minimize_scalar`
     def neg_area_sum_from_length(length):
         s = spacing_from_length(length, resistance, outer_layer)
@@ -96,7 +111,7 @@ def find_optimal_spiral(resistance, outer_layer):
     optimal = properties_of_square_spiral(length, spacing)
 
     # Return coil spacing, number of coils, and area-sum
-    return spacing, optimal[0], optimal[2]
+    return spacing, optimal
 
 
 def inner_resistance_from_front_resistance(front_resistance):
@@ -128,9 +143,7 @@ def optimal_magnetorquer_front_resistance():
 
 ### BEGIN ###
 if __name__ == "__main__":
-    print("Calculating...")
-    # test_func_properties_of_spiral()
-    #find_optimal_spiral(config.getfloat('Resistance'), True)
+    print("Calculating...\n\n")
 
     front_resistance = optimal_magnetorquer_front_resistance()
     inner_resistance = inner_resistance_from_front_resistance(front_resistance)
