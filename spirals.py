@@ -3,6 +3,7 @@ from scipy import integrate
 from scipy import optimize
 from pathlib import Path
 import configparser
+import unittest
 
 '''
 Helper functions that calculate geometric properties of spirals
@@ -152,3 +153,48 @@ def properties_of_square_spiral(
     inner_radius = r
 
     return num_of_coils, inner_radius, area_sum
+
+
+
+#### TESTS ####
+
+class TestRoundSpiral(unittest.TestCase):
+
+    # Circle with 2 coils.
+    def test_circle_with_two_coils(self):
+        result = properties_of_round_spiral(4 * math.pi, 0, 1)
+        self.assertAlmostEqual(result[0], 2)
+        self.assertAlmostEqual(result[1], 1)
+        self.assertAlmostEqual(result[2], 2 * math.pi)
+
+    # Compare with results received from https://planetcalc.com/9063/
+
+    def test_more_complicated_spiral(self):
+        result = properties_of_round_spiral(100, 1, 10)
+        self.assertAlmostEqual(result[0], 1.7432534773931)
+        self.assertAlmostEqual(result[1], 8.25674652261)
+        # self-calculated. (question validity)
+        self.assertAlmostEqual(result[2], 457.73601090254937)
+
+
+class TestSquareSpiral(unittest.TestCase):
+
+    # Square with 2 coils.
+    def test_square_with_two_coils(self):
+        result = properties_of_square_spiral(16, 0, 1)
+        self.assertAlmostEqual(result[0], 2)
+        self.assertAlmostEqual(result[1], 1)
+        self.assertAlmostEqual(result[2], 8)
+
+    # Draw it out to confirm!!
+
+    def test_example_spiral_1(self):
+
+        result = properties_of_square_spiral(24, 1, 2)
+        self.assertAlmostEqual(result[0], 2)
+        self.assertAlmostEqual(result[1], 0.5)
+        self.assertAlmostEqual(result[2], 19)
+
+
+if __name__ == '__main__':
+    unittest.main()
