@@ -53,7 +53,7 @@ ax.legend()
 
 
 # Adjust the main plot to make room for the sliders
-fig.subplots_adjust(left=0.25, bottom=0.25)
+fig.subplots_adjust(bottom=0.25)
 
 # Make a horizontal slider to control the spacing.
 ax_spacing = fig.add_axes([0.25, 0.1, 0.6, 0.04])

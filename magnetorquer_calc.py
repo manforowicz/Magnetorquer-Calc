@@ -4,7 +4,7 @@ from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
 from spirals import properties_of_square_spiral
-#import KiCad_spiral
+import KiCad_spiral
 
 '''
 Goal is to find coil that maximizes area-sum under the given constraints
@@ -58,7 +58,7 @@ def max_trace_length(resistance, outer_layer):
 
     '''
     lower = 0
-    upper = 1e6
+    upper = 1e6 # TODO: Algorithmatize this hard coded value
 
     while upper - lower > upper*0.001:
 
@@ -71,6 +71,7 @@ def max_trace_length(resistance, outer_layer):
             lower = length_guess
 
     max_length = lower
+
     return max_length
 
 
@@ -177,7 +178,7 @@ if __name__ == "__main__":
     print("Total area sum (m^2):  {:.4f}\n".format(total_area_sum))
 
 
-    '''KiCad_spiral.save_magnetorquer(config.getint("NumberOfLayers"), config.getfloat("OuterRadius"),
-                                   out_spacing, out_num_of_coils, out_spacing -
-                                   config.getfloat("GapBetweenTraces"),
-                                   in_spacing, in_num_of_coils, in_spacing - config.getfloat("GapBetweenTraces"))'''
+    KiCad_spiral.save_magnetorquer(
+        out_optimal[3], out_optimal[0], out_optimal[3] - config.getfloat("GapBetweenTraces"),
+        in_optimal[3], in_optimal[0], in_optimal[3] - config.getfloat("GapBetweenTraces")
+    )

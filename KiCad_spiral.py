@@ -20,16 +20,22 @@ def get_cartesian_coords(a, b, theta):
     y = (a-b*abs(theta)) * math.sin(theta)
     return Point(x, y)
 
-def add_spiral_segment(r, side):
-    '''
-    side: 0up 1right 2down 3right
-    '''
-    if side == 0:
-        
+def get_half(outer_radius, radius, side: bool, width, layer):
+    o_r = outer_radius
+    r = radius
 
+    p1 = Point(o_r - r, o_r - r)
+    p3 = Point(o_r + r, o_r + r)
+    
+    if side:
+        p2 = Point(p1.x, p3.y)
+    else:
+        p2 = Point(p3.x, p1.y)
+    
+    return segment(p1, p2, width, layer, "0") + segment(p2, p3, width, layer, "0")
 
-def add_segment(p1, p2, width, layer, net):
-    return "(segment (start {:.6f} {:.6f}) (end {:.6f} {:.6f}) (width {:.6f}) (layer {}) (net {}))\n".format(
+def segment(p1, p2, width, layer, net):
+    return "(segment (start {:.8f} {:.8f}) (end {:.8f} {:.8f}) (width {:.8f}) (layer {}) (net {}))\n".format(
         p1.x,
         p1.y,
         p2.x,
@@ -39,32 +45,27 @@ def add_segment(p1, p2, width, layer, net):
 
 def get_spiral(spacing, num_of_coils, stroke_width, layer, reverse):
 
-    r = config.getfloat('OuterRadius')
-    s = spacing
-    net = "0"
+    r = outer_radius = config.getfloat('OuterRadius')
     text = ""
-
-
-    # Draw one additional outer edge
-    num_of_coils = 0.25
 
     # Draw spiral, going 2 edges at a time.
     for i in range(2*int(num_of_coils)):
         
+        text += get_half(outer_radius, r, reverse, stroke_width, layer)
         
-        r -= s/2
-
+        r -= spacing/2
+        reverse = not reverse
     
 
-    p1 = get_cartesian_coords(a+5, b, 0)
-
-    text += add_segment(p1, Point(0, 0), stroke_width, layer, net)
+    #p1 = get_cartesian_coords(a+5, b, 0)
+    #text += add_segment(p1, Point(0, 0), stroke_width, layer, net)
 
     return text
 
 
 def save_magnetorquer(out_spacing, out_num_of_coils, out_stroke_width,
                       in_spacing, in_num_of_coils, in_stroke_width):
+
     p = Path(__file__).with_name('KiCad_spiral.txt')
     f = open(p, "w")
 
