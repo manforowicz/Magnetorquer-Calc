@@ -16,7 +16,7 @@ def get_data(spacing):
         max_l, lengths, areas_square, areas_circle
     '''
     if spacing == 0:
-        max_l = 50000
+        max_l = 1000
     else:
         max_l = 450/spacing
 

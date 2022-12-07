@@ -20,12 +20,16 @@ def get_cartesian_coords(a, b, theta):
     y = (a-b*abs(theta)) * math.sin(theta)
     return Point(x, y)
 
-def get_half(outer_radius, radius, side: bool, width, layer):
+def get_half(outer_radius, radius, side: bool, spacing, width, layer):
     o_r = outer_radius
     r = radius
 
-    p1 = Point(o_r - r, o_r - r)
-    p3 = Point(o_r + r, o_r + r)
+    if side:
+        p1 = Point(o_r - r, o_r - r)
+        p3 = Point(o_r + r - spacing/2, o_r + r - spacing/2)
+    else:
+        p1 = Point(o_r - r + spacing/2, o_r - r + spacing/2)
+        p3 = Point(o_r + r, o_r + r)
     
     if side:
         p2 = Point(p1.x, p3.y)
@@ -51,7 +55,7 @@ def get_spiral(spacing, num_of_coils, stroke_width, layer, reverse):
     # Draw spiral, going 2 edges at a time.
     for i in range(2*int(num_of_coils)):
         
-        text += get_half(outer_radius, r, reverse, stroke_width, layer)
+        text += get_half(outer_radius, r, reverse, spacing, stroke_width, layer)
         
         r -= spacing/2
         reverse = not reverse
