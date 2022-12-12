@@ -28,19 +28,17 @@ def spiral(trace_width_multiplier, trace_width_func, inner_radius=None, outer_ra
 
     # Note: Starts on the outside, and spirals inwards
 
-    if outer_radius == None:
-        outer_radius = config.getfloat("OuterRadius")
+    gap = config.getfloat("GapBetweenTraces")
 
     if inner_radius == None:
         inner_radius = 5
+    
+    if outer_radius == None:
+        outer_radius = config.getfloat("OuterRadius")
 
     r = outer_radius
-
-    gap = config.getfloat("GapBetweenTraces")
-
     area_sum = 0
     ohms = 0
-
     inner_spacing = 0
 
     while r > inner_radius:
