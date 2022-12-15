@@ -1,6 +1,10 @@
 from pathlib import Path
 from configparser import ConfigParser
 
+'''
+Functions 
+'''
+
 # Read configuration
 config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
@@ -14,14 +18,11 @@ def get_ohms_per_mm(trace_width_mm, exterior_layer):
     if trace_width_mm < 0:
         return float("nan")
 
-    trace_width_m = trace_width_mm / 1000
-    thickness_m = get_trace_thickness(exterior_layer)
+    thickness_mm = get_trace_thickness(exterior_layer)
 
     p = config.getfloat("CopperResistivity")
 
-    ohms_per_m = p / (thickness_m * trace_width_m)
-
-    ohms_per_mm = ohms_per_m / 1000
+    ohms_per_mm = p / (thickness_mm * trace_width_mm)
 
 
     return ohms_per_mm
@@ -37,10 +38,8 @@ def get_trace_thickness(exterior_layer):
     else:
         oz_thickness = config.getfloat("InnerLayerThickness")
 
-    thickness_m = (
-        oz_thickness 
-        * config.getfloat("TraceThicknessPerOz")
-        / 1000
-    )
+    m_per_oz = config.getfloat("TraceThicknessPerOz") / 1000
 
+    thickness_m = oz_thickness * m_per_oz
+    
     return thickness_m
