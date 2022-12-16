@@ -15,7 +15,7 @@ def get_ohms_per_mm(trace_width_mm, exterior_layer):
     '''
     Returns ohms per mm of trace length of given thickness
     '''
-    if trace_width_mm < 0:
+    if trace_width_mm <= 0:
         return float("nan")
 
     thickness_mm = get_trace_thickness(exterior_layer)
