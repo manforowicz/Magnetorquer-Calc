@@ -18,11 +18,11 @@ def get_ohms_per_mm(trace_width_mm, exterior_layer):
     if trace_width_mm <= 0:
         return float("nan")
 
-    thickness_mm = get_trace_thickness(exterior_layer)
+    thickness_m = get_trace_thickness(exterior_layer)
 
     p = config.getfloat("CopperResistivity")
 
-    ohms_per_mm = p / (thickness_mm * trace_width_mm)
+    ohms_per_mm = p / (thickness_m * trace_width_mm)
 
     return ohms_per_mm
 
@@ -55,8 +55,8 @@ def spacing_from_length(length_mm, resistance, exterior):
 
     thickness_m = get_trace_thickness(exterior)
 
-    coefficient = config.getfloat("CopperResistivity") / thickness_m
+    p = config.getfloat("CopperResistivity")
 
-    trace_width = length_mm * 1000 / resistance * coefficient
+    trace_width_mm = (p * length_mm) / (thickness_m * resistance)
 
-    return trace_width + config.getfloat("GapBetweenTraces")  # Millimeters
+    return trace_width_mm + config.getfloat("GapBetweenTraces")  # Millimeters
