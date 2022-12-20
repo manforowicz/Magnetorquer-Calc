@@ -5,7 +5,7 @@ import numpy as np
 
 def get_moment(watts, resistance):
     
-    area_sum = spiral_of_resistance(resistance, radius_proportional, True)[0]
+    area_sum = spiral_of_resistance(resistance, True, radius_proportional)[0]
 
     current = math.sqrt(watts / resistance)
 

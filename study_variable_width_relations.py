@@ -5,7 +5,7 @@ import numpy as np
 
 
 def get_data(ohms_list, func):
-    return [spiral_of_resistance(ohms, func, True)[0] for ohms in ohms_list]
+    return [spiral_of_resistance(ohms, True, func)[0] for ohms in ohms_list]
 
 
 # Create the figure and the line that we will manipulate

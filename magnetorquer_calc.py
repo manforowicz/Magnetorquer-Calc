@@ -4,7 +4,8 @@ from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
 from spirals import properties_of_square_spiral
-import KiCad_spiral
+import output_KiCad_spiral
+from unit_conversions import inner_resistance_from_front_resistance
 
 '''
 Goal is to find coil that maximizes area-sum under the given constraints
@@ -115,12 +116,6 @@ def find_optimal_spiral(resistance, outer_layer):
     return optimal[0], optimal[1], optimal[2], spacing, length
 
 
-def inner_resistance_from_front_resistance(front_resistance):
-    return (
-        (config.getfloat("Resistance") - 2 * front_resistance) /
-        (config.getint("NumberOfLayers") - 2)
-    )
-
 
 def find_total_area_sum_from_front_resistance(front_resistance):
     inner_resistance = inner_resistance_from_front_resistance(front_resistance)
@@ -154,7 +149,10 @@ def print_optimal_properties(p, resistance):
 
 ### BEGIN ###
 if __name__ == "__main__":
-    print("Calculating...")
+    
+
+    print(optimal_magnetorquer_front_resistance())
+    '''print("Calculating...")
 
     front_resistance = optimal_magnetorquer_front_resistance()
     inner_resistance = inner_resistance_from_front_resistance(front_resistance)
@@ -181,4 +179,4 @@ if __name__ == "__main__":
     KiCad_spiral.save_magnetorquer(
         out_optimal[3], out_optimal[0], out_optimal[3] - config.getfloat("GapBetweenTraces"),
         in_optimal[3], in_optimal[0], in_optimal[3] - config.getfloat("GapBetweenTraces")
-    )
+    )'''
