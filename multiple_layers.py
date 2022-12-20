@@ -1,5 +1,5 @@
 from unit_conversions import *
-from dynamic_spiral import spiral_of_resistance
+from spiral_dynamic_square import spiral_of_resistance
 from scipy import optimize
 
 

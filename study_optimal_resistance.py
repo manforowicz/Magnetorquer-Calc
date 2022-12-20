@@ -1,4 +1,4 @@
-from dynamic_spiral import *
+from spiral_dynamic_square import *
 import matplotlib.pyplot as plt
 import numpy as np
 

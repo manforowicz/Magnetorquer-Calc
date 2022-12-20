@@ -3,9 +3,9 @@ import numpy as np
 from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
-from spirals import properties_of_square_spiral
+from spiral_simple_square import properties_of_square_spiral
 import output_KiCad_spiral
-from unit_conversions import inner_resistance_from_front_resistance
+from unit_conversions import *
 
 '''
 Goal is to find coil that maximizes area-sum under the given constraints
@@ -21,23 +21,6 @@ This spiral is used due to its favorable characteristics demonstrated in square_
 config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
-
-
-# Returns spacing of trace needed to give desired resistance
-def spacing_from_length(length, resistance, outer_layer):
-    if outer_layer:
-        thickness_in_oz = config.getfloat("OuterLayerThickness")
-    else:
-        thickness_in_oz = config.getfloat("InnerLayerThickness")
-
-    thickness_in_m = thickness_in_oz * \
-        config.getfloat("TraceThicknessPerOz")/1000
-
-    coefficient = config.getfloat("CopperResistivity") / thickness_in_m
-
-    trace_width = length / resistance * coefficient
-
-    return trace_width + config.getfloat("GapBetweenTraces")  # Millimeters
 
 
 # Returns max trace length physically possible.
@@ -77,7 +60,7 @@ def max_trace_length(resistance, outer_layer):
 
 
 # Finds trace length tha maximizes area-sum
-def find_optimal_spiral(resistance, outer_layer):
+def spiral_of_resistance(resistance, outer_layer):
     '''
     Calculates the optimal properties of square spiral.
     Optimal properties means area-sum maximizing.
@@ -122,8 +105,8 @@ def find_total_area_sum_from_front_resistance(front_resistance):
     inner_layers = config.getint("NumberOfLayers") - 2
 
     area_sum = 0
-    area_sum += 2 * find_optimal_spiral(front_resistance, True)[2]
-    area_sum += inner_layers * find_optimal_spiral(inner_resistance, False)[2]
+    area_sum += 2 * spiral_of_resistance(front_resistance, True)[2]
+    area_sum += inner_layers * spiral_of_resistance(inner_resistance, False)[2]
     return area_sum
 
 

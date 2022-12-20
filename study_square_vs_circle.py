@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
-from spirals import properties_of_square_spiral, properties_of_round_spiral
+import spiral_simple_circle, spiral_simple_square
 #### PLOTTING THE GRAPH ####
 
 
@@ -22,11 +22,11 @@ def get_data(spacing):
 
     lengths = np.linspace(0, max_l, 50)
     areas_square = [
-        properties_of_square_spiral(l, spacing, OUTER_RADIUS)[2]
+        spiral_simple_square.properties_of_square_spiral(l, spacing, OUTER_RADIUS)[2]
         for l in lengths
     ]
     areas_circle = [
-        properties_of_round_spiral(l, spacing, OUTER_RADIUS)[2]
+        spiral_simple_circle.properties_of_round_spiral(l, spacing, OUTER_RADIUS)[2]
         for l in lengths
     ]
     return max_l, lengths, areas_square, areas_circle
