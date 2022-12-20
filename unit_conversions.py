@@ -51,12 +51,12 @@ def inner_resistance_from_front_resistance(front_resistance):
     )
 
 
-def spacing_from_length(length, resistance, exterior):
+def spacing_from_length(length_mm, resistance, exterior):
 
     thickness_m = get_trace_thickness(exterior)
 
     coefficient = config.getfloat("CopperResistivity") / thickness_m
 
-    trace_width = length / resistance * coefficient
+    trace_width = length_mm * 1000 / resistance * coefficient
 
     return trace_width + config.getfloat("GapBetweenTraces")  # Millimeters
