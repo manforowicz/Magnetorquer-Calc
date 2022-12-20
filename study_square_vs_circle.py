@@ -22,11 +22,11 @@ def get_data(spacing):
 
     lengths = np.linspace(0, max_l, 50)
     areas_square = [
-        spiral_simple_square.properties_of_square_spiral(l, spacing, OUTER_RADIUS)[2]
+        spiral_simple_square.spiral(l, spacing, OUTER_RADIUS)[0]
         for l in lengths
     ]
     areas_circle = [
-        spiral_simple_circle.properties_of_round_spiral(l, spacing, OUTER_RADIUS)[2]
+        spiral_simple_circle.spiral(l, spacing, OUTER_RADIUS)[0]
         for l in lengths
     ]
     return max_l, lengths, areas_square, areas_circle

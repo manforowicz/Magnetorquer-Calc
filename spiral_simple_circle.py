@@ -4,6 +4,7 @@ from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
 import unittest
+from unit_conversions import *
 
 # Read configuration
 config = ConfigParser()
@@ -45,7 +46,7 @@ def area_sum_of_round_spiral(a: float, b: float, theta: float) -> float:
     return integrate.quad(lambda t: 0.5*(a - b*t)**2, 0, theta)[0]
 
 
-def properties_of_round_spiral(
+def spiral(
     length, spacing, outer_radius=config.getfloat('OuterRadius')
 ) -> tuple:
     '''
@@ -84,14 +85,70 @@ def properties_of_round_spiral(
     inner_radius = a - b*theta
     area_sum = area_sum_of_round_spiral(a, b, theta)
 
-    return num_of_coils, inner_radius, area_sum
+    return area_sum, inner_radius, num_of_coils
 
+# Returns max trace length physically possible.
+# Takes outer radius and a function that defines spacing
+def max_trace_length(resistance, outer_layer):
+    '''
+    Calculates the maximum length of wire that can fit on the spiral.
+
+    Uses binary search and finds highest length that doesn't receive NaN
+    from spirals.properties_of_square_spiral().
+
+    Paramters:
+        resistance (float - ohms): The intended resistance of the spiral.
+        outer_layer (bool): States whether spiral is on outer layer of the PCB
+                            since that influences trace thickness
+
+    Returns:
+        max_length (float - mm): Maximum length of wire that can fit on the spiral.
+
+    '''
+    lower = 0
+    upper = 1e6 # TODO: Algorithmatize this hard coded value
+
+    while upper - lower > upper*0.001:
+
+        length_guess = (upper + lower)/2
+        s = spacing_from_length(length_guess, resistance, outer_layer)
+
+        if math.isnan(spiral(length_guess, s)[0]):
+            upper = length_guess
+        else:
+            lower = length_guess
+
+    max_length = lower
+
+    return max_length
+
+def spiral_of_resistance(resistance, outer_layer):
+
+    # Dummy function to meet requirements of `optimize.minimize_scalar`
+    def neg_area_sum_from_length(length):
+        s = spacing_from_length(length, resistance, outer_layer)
+        return -spiral(length, s)[0]
+
+    max_length = max_trace_length(resistance, outer_layer)
+    # Finds length that gives maximum area-sum
+    length = optimize.minimize_scalar(
+        neg_area_sum_from_length,
+        bounds=(0, max_length),
+        method='bounded'
+    ).x
+
+    # Calculate data from the optimal length
+    spacing = spacing_from_length(length, resistance, outer_layer)
+    optimal = spiral(length, spacing)
+
+    # Return coil spacing, number of coils, and area-sum
+    return *optimal, spacing, length
 
 class TestRoundSpiral(unittest.TestCase):
 
     # Circle with 2 coils.
     def test_with_two_coils(self):
-        result = properties_of_round_spiral(4 * math.pi, 0, 1)
+        result = spiral(4 * math.pi, 0, 1)
         self.assertAlmostEqual(result[0], 2)
         self.assertAlmostEqual(result[1], 1)
         self.assertAlmostEqual(result[2], 2 * math.pi)
@@ -99,7 +156,7 @@ class TestRoundSpiral(unittest.TestCase):
     # Compare with results received from https://planetcalc.com/9063/
 
     def test_example_1(self):
-        result = properties_of_round_spiral(100, 1, 10)
+        result = spiral(100, 1, 10)
         self.assertAlmostEqual(result[0], 1.7432534773931)
         self.assertAlmostEqual(result[1], 8.25674652261)
 

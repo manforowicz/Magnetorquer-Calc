@@ -3,7 +3,7 @@ import numpy as np
 from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
-from spiral_simple_square import properties_of_square_spiral
+from spiral_simple_square import spiral
 import output_KiCad_spiral
 from unit_conversions import *
 
@@ -49,7 +49,7 @@ def max_trace_length(resistance, outer_layer):
         length_guess = (upper + lower)/2
         s = spacing_from_length(length_guess, resistance, outer_layer)
 
-        if math.isnan(properties_of_square_spiral(length_guess, s)[0]):
+        if math.isnan(spiral(length_guess, s)[0]):
             upper = length_guess
         else:
             lower = length_guess
@@ -81,7 +81,7 @@ def spiral_of_resistance(resistance, outer_layer):
     # Dummy function to meet requirements of `optimize.minimize_scalar`
     def neg_area_sum_from_length(length):
         s = spacing_from_length(length, resistance, outer_layer)
-        return -properties_of_square_spiral(length, s)[2]
+        return -spiral(length, s)[2]
 
     max_length = max_trace_length(resistance, outer_layer)
     # Finds length that gives maximum area-sum
@@ -93,7 +93,7 @@ def spiral_of_resistance(resistance, outer_layer):
 
     # Calculate data from the optimal length
     spacing = spacing_from_length(length, resistance, outer_layer)
-    optimal = properties_of_square_spiral(length, spacing)
+    optimal = spiral(length, spacing)
 
     # Return coil spacing, number of coils, and area-sum
     return optimal[0], optimal[1], optimal[2], spacing, length

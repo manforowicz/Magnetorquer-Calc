@@ -24,7 +24,6 @@ def get_ohms_per_mm(trace_width_mm, exterior_layer):
 
     ohms_per_mm = p / (thickness_mm * trace_width_mm)
 
-
     return ohms_per_mm
 
 
@@ -41,8 +40,9 @@ def get_trace_thickness(exterior_layer):
     m_per_oz = config.getfloat("TraceThicknessPerOz") / 1000
 
     thickness_m = oz_thickness * m_per_oz
-    
+
     return thickness_m
+
 
 def inner_resistance_from_front_resistance(front_resistance):
     return (
@@ -50,12 +50,12 @@ def inner_resistance_from_front_resistance(front_resistance):
         (config.getint("NumberOfLayers") - 2)
     )
 
+
 def spacing_from_length(length, resistance, exterior):
-    
+
     thickness_m = get_trace_thickness(exterior)
 
     coefficient = config.getfloat("CopperResistivity") / thickness_m
-
 
     trace_width = length / resistance * coefficient
 

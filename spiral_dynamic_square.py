@@ -44,6 +44,7 @@ def real_radius_proportional(multiplier, radius):
 
     return width
 
+# Actual program
 
 def spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=False):
 
