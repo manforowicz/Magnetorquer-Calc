@@ -52,7 +52,6 @@ def spiral(trace_width_multiplier, trace_width_func, exterior):
     return area_sum_m, ohms, coils
 
 
-
 def spiral_of_resistance(ohms, trace_width_func, exterior):
 
     def func(trace_width_multiplier):
@@ -60,7 +59,6 @@ def spiral_of_resistance(ohms, trace_width_func, exterior):
 
     trace_width_multiplier = optimize.brentq(func, 1e-6, 1e6)
     return spiral(trace_width_multiplier, trace_width_func, exterior)
-
 
 
 # Different functions that relate radius to spacing
@@ -81,7 +79,6 @@ def spacing_proportional_to_radius(multiplier, radius):
 
 def constant(multiplier, radius):
     return multiplier
-
 
 
 def real_radius_proportional(multiplier, radius):

@@ -1,5 +1,3 @@
-import math
-import numpy as np
 from pathlib import Path
 from configparser import ConfigParser
 
@@ -9,16 +7,12 @@ config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
+
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
 
-
-def get_cartesian_coords(a, b, theta):
-    x = (a-b*abs(theta)) * math.cos(theta)
-    y = (a-b*abs(theta)) * math.sin(theta)
-    return Point(x, y)
 
 def get_half(outer_radius, radius, side: bool, spacing, width, layer):
     o_r = outer_radius
@@ -30,13 +24,14 @@ def get_half(outer_radius, radius, side: bool, spacing, width, layer):
     else:
         p1 = Point(o_r - r + spacing/2, o_r - r + spacing/2)
         p3 = Point(o_r + r, o_r + r)
-    
+
     if side:
         p2 = Point(p1.x, p3.y)
     else:
         p2 = Point(p3.x, p1.y)
-    
+
     return segment(p1, p2, width, layer, "0") + segment(p2, p3, width, layer, "0")
+
 
 def segment(p1, p2, width, layer, net):
     return "(segment (start {:.8f} {:.8f}) (end {:.8f} {:.8f}) (width {:.8f}) (layer {}) (net {}))\n".format(
@@ -54,15 +49,12 @@ def get_spiral(spacing, num_of_coils, stroke_width, layer, reverse):
 
     # Draw spiral, going 2 edges at a time.
     for i in range(2*int(num_of_coils)):
-        
-        text += get_half(outer_radius, r, reverse, spacing, stroke_width, layer)
-        
+
+        text += get_half(outer_radius, r, reverse,
+                         spacing, stroke_width, layer)
+
         r -= spacing/2
         reverse = not reverse
-    
-
-    #p1 = get_cartesian_coords(a+5, b, 0)
-    #text += add_segment(p1, Point(0, 0), stroke_width, layer, net)
 
     return text
 
