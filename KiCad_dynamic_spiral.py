@@ -10,4 +10,3 @@ config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
 
-def save_spiral()
