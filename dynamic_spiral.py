@@ -14,53 +14,47 @@ config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
 
-
-
-
 def spiral(trace_width_multiplier, trace_width_func, inner_radius=None, outer_radius=None):
 
     # Note: Starts on the outside, and spirals inwards
 
-    gap = config.getfloat("GapBetweenTraces")
-
     if inner_radius == None:
         inner_radius = config.getfloat("InnerRadius")
-    
+
     if outer_radius == None:
         outer_radius = config.getfloat("OuterRadius")
 
-    r = outer_radius
+    gap = config.getfloat("GapBetweenTraces")
+
     area_sum = 0
     ohms = 0
-    inner_spacing = 0
     coils = 0
 
-    while r > inner_radius:
+    current_r = outer_radius
+    prev_r = outer_radius
 
-        outer_spacing = inner_spacing
+    current_width = trace_width_func(trace_width_multiplier, current_r)
+    current_r -= 0.5 * current_width
 
-        width, ohms_per_mm = trace_width_func(trace_width_multiplier, r, outer_spacing)
-        
+    while current_r + 0.5 * current_width > inner_radius:
 
-        if math.isnan(ohms_per_mm): 
-            return float("nan"), float("inf"), float("nan")
+        next_r = current_r - 0.5 * current_width - gap
+        next_width = trace_width_func(trace_width_multiplier, next_r)
+        next_r -= 0.5 * next_width
 
-        inner_spacing = width + gap
-
-        area_sum += 4 * r**2
-        area_sum += 0.5*r * outer_spacing
-        area_sum -= 0.5*r * inner_spacing
-
-        ohms += ohms_per_mm * 8 * r
-        ohms += ohms_per_mm * outer_spacing
-        ohms -= ohms_per_mm * inner_spacing
-
-        r -= inner_spacing
+        length = 8*current_r + (prev_r - current_r) - (current_r - next_r)
+        area_sum += 0.5 * length * current_r
+        ohms += get_ohms_per_mm(current_width, True) * length
         coils += 1
+
+        prev_r = current_r
+        current_r = next_r
+        current_width = next_width
 
     area_sum_m = area_sum * 1e-6
 
     return area_sum_m, ohms, coils
+
 
 
 def spiral_of_resistance(ohms, trace_width_func):
@@ -71,63 +65,34 @@ def spiral_of_resistance(ohms, trace_width_func):
     trace_width_multiplier = optimize.brentq(func, 1e-6, 1e6)
     return spiral(trace_width_multiplier, trace_width_func)
 
-def best_spiral_of_heat(watts):
-    def neg_torque(resistance):
-        area_sum = spiral_of_resistance(resistance, trace_proportional)[0]
-
-        current = math.sqrt(watts *resistance) / resistance
-        
-        return -area_sum * current
-
-    resistance = optimize.minimize_scalar(neg_torque, bounds=(0.01, 100), method='bounded').x
-
-    print(resistance)
-    print(math.sqrt(watts/resistance))
-
-    return spiral_of_resistance(resistance, trace_proportional)
 
 
-#### Different functions that relate radius to spacing
+# Different functions that relate radius to spacing
 
-def trace_proportional(multiplier, radius, _):
+def radius_proportional(multiplier, radius, _):
 
     # Returns radius (mm), ohms_per_mm
     width = multiplier / radius**1
-    return width, get_ohms_per_mm(width, True)
+    return width
 
 
-def total_spacing_proportional(multiplier, radius, _):
+def spacing_proportional_to_radius(multiplier, radius):
 
     # Returns radius (mm), ohms_per_mm
     width = multiplier / radius**1 - config.getfloat("GapBetweenTraces")
-    return width, get_ohms_per_mm(width, True)
+    return width
 
-def constant(multiplier, radius, _):
-    return multiplier, get_ohms_per_mm(multiplier, True)
 
-def custom(multiplier, radius, outer_spacing):
-    gap = config.getfloat("GapBetweenTraces")
-    
-    def func(width):
+def constant(multiplier, radius):
+    return multiplier
 
-        resistance = 1e4 * multiplier * (8*radius + outer_spacing -gap-width) / width
-        area_value = radius**3 - (radius-gap-width)**3
-        #print(resistance-area_value)
-        return resistance - area_value
-    
-    width = optimize.brentq(func, 1e-6, 1e6)
 
-    return width, get_ohms_per_mm(width, True)
 
-def custom2(multiplier, radius, _):
+def real_radius_proportional(multiplier, radius):
 
-    if radius**2 <= 2* multiplier:
+    if radius**2 <= 2 * multiplier:
         width = radius
     else:
         width = radius - math.sqrt(radius**2 - 2*multiplier)
 
-    return width, get_ohms_per_mm(width, True)
-
-
-
-print(best_spiral_of_heat(1))
+    return width
