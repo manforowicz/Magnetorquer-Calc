@@ -27,7 +27,7 @@ class SpiralShape:
     def flip(self):
         for coil in self.coils:
             for point in coil:
-                point[1], point[0] = point[0], point[1]
+                point = point[1], point[0]
 
 
     def get_KiCad_text(self, layer):
@@ -41,13 +41,13 @@ class SpiralShape:
             coil = self.coils[coil_i]
             width = self.widths[coil_i]
 
-            out += get_segment(width, layer, *coil[0], *coil[1])
+            out += get_segment(width, get_layer_name(layer), *coil[0], *coil[1])
 
             for point_i in range(2, len(coil)):
                 out += get_segment(width, get_layer_name(layer),
-                                    coil[point_i-1], coil[point_i])
+                                    *coil[point_i-1], *coil[point_i])
         
-        out += get_segment(*self.coils[-1][-1], config.getfloat("OuterRadius"), config.getfloat("OuterRadius"))
+        out += get_segment(1, get_layer_name(layer), *self.coils[-1][-1], config.getfloat("OuterRadius"), config.getfloat("OuterRadius"))
 
         return out
 
@@ -55,27 +55,25 @@ class SpiralShape:
 def get_segment(width, layer, x1, y1, x2, y2):
     net = 0
 
-    return "(segment (start {:.8f} {:.8f}) (end {:.8f} {:.8f}) (width {:.8f}) (layer {}) (net {}))\n".format(
+    return "(segment (start {:.4f} {:.4f}) (end {:.4f} {:.4f}) (width {:.4f}) (layer {}) (net {}))\n".format(
         x1,
         y1,
         x2,
         y2,
         width, layer, net)
 
-def get_via(x, y, layer1, layer2):
+def get_via(x, y):
     net = 0
-    layer1 = get_layer_name(layer1)
-    layer2 = get_layer_name(layer2)
     size = config.getfloat("ViaSize")
     drill = config.getfloat("ViaDrill")
 
-    return f"(via (at {x} {y}) (size {size}) (drill {drill}) (layers {layer1} {layer2}) (net {net}))"
+    return f"(via (at {x:.4f} {y:.4f}) (size {size:.4f}) (drill {drill:.4f}) (layers F.Cu B.Cu) (net {net}))\n"
 
 
 def get_layer_name(layer):
     if layer == 0:
         return 'F.Cu'
-    elif layer == config.getint("NumberOfLayers"):
+    elif layer == config.getint("NumberOfLayers")-1:
         return 'B.Cu'
     else:
         return f"In{layer}.Cu"
@@ -84,16 +82,12 @@ def get_layer_name(layer):
 
 def save_spiral(exterior_shape, interior_shape):
     num = config.getint("NumberOfLayers")
-    outer_radius = config.getfloat("OuterRadius")
 
 
     out = exterior_shape.get_KiCad_text(0)
 
-    out += get_via(outer_radius, outer_radius, 0, 1)
-
     for i in range(num-2):
-        out += interior_shape.get_KiCadText(i+1)
-        out += get_via(0, 0, i+1, i+2)
+        out += interior_shape.get_KiCad_text(i+1)
     
     out += exterior_shape.get_KiCad_text(num-1)
 

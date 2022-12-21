@@ -38,7 +38,7 @@ def find_intersection(m1, p1, m2, p2):
 
 # Draws a quadratic bezier curve
 def curve(handle, endpoint):
-    return "Q {:.8f} {:.8f}, {:.8f} {:.8f}\n".format(handle.x, handle.y, endpoint.x, endpoint.y)
+    return "Q {:.4f} {:.4f}, {:.4f} {:.4f}\n".format(handle.x, handle.y, endpoint.x, endpoint.y)
 
 
 #Draw an svg spiral and save it to the current directory
@@ -50,9 +50,9 @@ def save_curve_svg(outer_radius, spacing, num_of_coils, stroke_width):
     p = Path(__file__).with_name('spiral.svg')
     f = open(p, "w")
     f.write('''<svg
-        width = "{0:.8f}cm"
-        height = "{0:.8f}cm"
-        viewBox = "{1:.8f} {1:.8f} {0:.8f} {0:.8f}"
+        width = "{0:.4f}cm"
+        height = "{0:.4f}cm"
+        viewBox = "{1:.4f} {1:.4f} {0:.4f} {0:.4f}"
         xmlns="http://www.w3.org/2000/svg"
         xmlns:svg="http://www.w3.org/2000/svg">\n'''.format(outer_radius*2, -outer_radius))
 
@@ -61,7 +61,7 @@ def save_curve_svg(outer_radius, spacing, num_of_coils, stroke_width):
 
     m1 = get_cartesian_slope(a, b, 0)
     p1 = get_cartesian_coords(a, b, 0)
-    f.write("M {:.8f} {:.8f}\n".format(p1.x, p1.y))
+    f.write("M {:.4f} {:.4f}\n".format(p1.x, p1.y))
 
     for theta in np.arange(math.pi/4, theta, math.pi/4):
         m2 = get_cartesian_slope(a, b, theta)

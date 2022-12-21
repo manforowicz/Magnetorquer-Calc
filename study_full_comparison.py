@@ -18,7 +18,7 @@ def get_data(func, label, *args):
 fig, ax = plt.subplots()
 
 # Draw the initial lines
-ohms_list = np.linspace(1, 1000, 100)
+ohms_list = np.linspace(1, 100, 100)
 get_data(
     spiral_simple_circle.spiral_of_resistance, "Simple circle")
 get_data(

@@ -8,76 +8,71 @@ config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
 
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
+def get_spiral(spacing, num_of_coils, trace_width, layer):
+
+    reverse = layer % 2 == 1
+
+    outer_radius = config.getfloat("OuterRadius")
+
+    out = ""
+    for i in range(num_of_coils):
+        r = outer_radius - i * spacing
+
+        a = (outer_radius - (r + spacing), outer_radius - r)
+        b = (outer_radius + r, outer_radius - r)
+        c = (outer_radius + r, outer_radius + r)
+        d = (outer_radius - r, outer_radius + r)
+        e = (outer_radius - r, outer_radius - (r-spacing))
+
+        out += get_segment(*a, *b, trace_width, layer, reverse)
+        out += get_segment(*b, *c, trace_width, layer, reverse)
+        out += get_segment(*c, *d, trace_width, layer, reverse)
+        out += get_segment(*d, *e, trace_width, layer, reverse)
+
+    return out
 
 
-def get_half(outer_radius, radius, side: bool, spacing, width, layer):
-    o_r = outer_radius
-    r = radius
+def get_segment(x1, y1, x2, y2, width, layer, reverse):
+    net = 0
 
-    if side:
-        p1 = Point(o_r - r, o_r - r)
-        p3 = Point(o_r + r - spacing/2, o_r + r - spacing/2)
+    if reverse:
+        x1, y1 = y1, x1
+        x2, y2 = y2, x2
+
+    if layer == 0:
+        layer = 'F.Cu'
+    elif layer == config.getint("NumberOfLayers")-1:
+        layer = 'B.Cu'
     else:
-        p1 = Point(o_r - r + spacing/2, o_r - r + spacing/2)
-        p3 = Point(o_r + r, o_r + r)
+        layer = f"In{layer}.Cu"
 
-    if side:
-        p2 = Point(p1.x, p3.y)
-    else:
-        p2 = Point(p3.x, p1.y)
-
-    return segment(p1, p2, width, layer, "0") + segment(p2, p3, width, layer, "0")
+    return f"(segment (start {x1:.4f} {y1:.4f}) (end {x2:.4f} {y2:.4f}) (width {width:.4f}) (layer {layer}) (net {net}))\n"
 
 
-def segment(p1, p2, width, layer, net):
-    return "(segment (start {:.8f} {:.8f}) (end {:.8f} {:.8f}) (width {:.8f}) (layer {}) (net {}))\n".format(
-        p1.x,
-        p1.y,
-        p2.x,
-        p2.y,
-        width, layer, net)
+def save_magnetorquer(exterior_spacing, exterior_num_of_coils,
+                      interior_spacing, interior_num_of_coils,):
 
 
-def get_spiral(spacing, num_of_coils, stroke_width, layer, reverse):
 
-    r = outer_radius = config.getfloat('OuterRadius')
-    text = ""
+    exterior_width = exterior_spacing - config.getfloat("GapBetweenTraces")
+    interior_width = interior_spacing - config.getfloat("GapBetweenTraces")
 
-    # Draw spiral, going 2 edges at a time.
-    for i in range(2*int(num_of_coils)):
-
-        text += get_half(outer_radius, r, reverse,
-                         spacing, stroke_width, layer)
-
-        r -= spacing/2
-        reverse = not reverse
-
-    return text
-
-
-def save_magnetorquer(out_spacing, out_num_of_coils, out_stroke_width,
-                      in_spacing, in_num_of_coils, in_stroke_width):
-
-    p = Path(__file__).with_name('KiCad_spiral.txt')
-    f = open(p, "w")
 
     num_of_layers = config.getint('NumberOfLayers')
 
-    f.write(get_spiral(out_spacing,
-            out_num_of_coils, out_stroke_width, "F.Cu", False))
 
-    for i in range(num_of_layers - 2):
-        layer = "In" + str(i+1) + ".Cu"
-        f.write(get_spiral(in_spacing,
-                in_num_of_coils, in_stroke_width, layer, i % 2 == 0))
+    out = ""
 
-    f.write(get_spiral(out_spacing,
-            out_num_of_coils, out_stroke_width, "B.Cu", num_of_layers % 2 == 0))
+    out += get_spiral(exterior_spacing, exterior_num_of_coils, exterior_width, 0)
+    for i in range(num_of_layers-2):
+        out += get_spiral(interior_spacing, interior_num_of_coils, interior_width, i+1)
+    
+    out += get_spiral(exterior_spacing, exterior_num_of_coils, exterior_width, num_of_layers-1)
 
+
+    p = Path(__file__).with_name('KiCad_spiral.txt')
+    f = open(p, "w")
+    f.write(out)
     f.close()
 
     print("Saved optimal spiral in KiCad_spiral.txt")

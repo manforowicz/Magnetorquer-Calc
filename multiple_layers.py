@@ -1,7 +1,7 @@
 from unit_conversions import *
-from spiral_dynamic_square import spiral_of_resistance
+from spiral_simple_square import spiral_of_resistance
 from scipy import optimize
-import output_KiCad_dynamic_spiral
+import output_KiCad_spiral
 
 
 def get_total_area_sum_from_front_resistance(front_resistance):
@@ -26,10 +26,10 @@ def get_optimal_magnetorquer():
     front_resistance = get_optimal_front_resistance()
     interior_resistance = interior_resistance_from_front_resistance(front_resistance)
 
-    exterior_shape = spiral_of_resistance(front_resistance, True, return_shape=True)
-    interior_shape = spiral_of_resistance(interior_resistance, True, return_shape=False)
+    exterior = spiral_of_resistance(front_resistance, True)
+    interior = spiral_of_resistance(interior_resistance, False)
 
-    output_KiCad_dynamic_spiral.save_spiral(exterior_shape, interior_shape)
+    output_KiCad_spiral.save_magnetorquer(exterior[3], exterior[2], interior[3], interior[2])
 
     
 
