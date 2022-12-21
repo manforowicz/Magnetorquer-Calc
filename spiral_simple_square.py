@@ -10,19 +10,6 @@ config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
-def area_added_by_edge(radius):
-    '''
-    Returns the area added by drawing an edge on a square spiral.
-
-    Parameters:
-        radius (float): The radius of the edge from the spiral's center
-
-    Returns:
-        area (float): Area added by drawing this edge on a square spiral
-    '''
-
-    return radius ** 2
-
 
 def spiral(
     length, spacing, outer_radius=config.getfloat('OuterRadius')
@@ -43,39 +30,27 @@ def spiral(
     '''
     r = outer_radius
     s = spacing
-    
 
-    # Draw one additional outer edge
-    num_of_coils = 0.25
-    length -= r*2
-    area_sum = area_added_by_edge(r)
 
-    # Draw spiral, going 2 edges at a time.
-    if length > 0:
-        r += s/2
+    area_sum = -0.5 * spacing * r
+    length += spacing
+
+    num_of_coils = 0
     while length > 0:
-        r -= s/2
+        num_of_coils += 1
+        area_sum += 4 * r ** 2
+        length -= 8 * r
+        r -= s
         if r < 0:
             return math.nan, math.nan, math.nan
+    
+    r += s
 
-        length -= 4*r
-        area_sum += 2 * area_added_by_edge(r)
-        num_of_coils += 0.5
-
-    # If overshot by more than one edge, remove that edge
-    if length <= -2*r:
-        area_sum -= area_added_by_edge(r)
-        length += 2*r
-        num_of_coils -= 0.25
-
-    # Remove triangle area of overshot length
-    area_sum -= -length * r / 2
+    area_sum -= -length * r * 0.5
 
     inner_radius = r
+    return area_sum * 1e-6, inner_radius, num_of_coils
 
-    area_sum = area_sum * 1e-6
-
-    return area_sum, inner_radius, num_of_coils
 
 
 # Returns max trace length physically possible.
@@ -97,7 +72,7 @@ def max_trace_length(resistance, outer_layer):
 
     '''
     lower = 0
-    upper = 1e6 # TODO: Algorithmatize this hard coded value
+    upper = 1e6  # TODO: Algorithmatize this hard coded value
 
     while upper - lower > upper*0.001:
 
@@ -142,24 +117,27 @@ class TestSquareSpiral(unittest.TestCase):
     # Square with 2 coils.
     def test_with_two_coils(self):
         result = spiral(16, 0, 1)
-        self.assertAlmostEqual(result[0], 2)
+        self.assertAlmostEqual(result[0], 8 * 1e-6)
         self.assertAlmostEqual(result[1], 1)
-        self.assertAlmostEqual(result[2], 8)
+        self.assertAlmostEqual(result[2], 2)
 
     # Draw it out to confirm!!
 
     def test_example_spiral_1(self):
 
         result = spiral(24, 1, 2)
-        self.assertAlmostEqual(result[0], 2.25)
-        self.assertAlmostEqual(result[1], 0.5)
-        self.assertAlmostEqual(result[2], 19)
+        self.assertAlmostEqual(result[0], 19 * 1e-6)
+        self.assertAlmostEqual(result[1], 1)
+        self.assertAlmostEqual(result[2], 2)
 
     # Draw it out to confirm!
 
     def test_example_spiral_2(self):
 
         result = spiral(4, 1, 2)
-        self.assertAlmostEqual(result[0], 0.25)
+        self.assertAlmostEqual(result[0], 3 * 1e-6)
         self.assertAlmostEqual(result[1], 2)
-        self.assertAlmostEqual(result[2], 4)
+        self.assertAlmostEqual(result[2], 1)
+
+if __name__ == "__main__":
+    unittest.main()

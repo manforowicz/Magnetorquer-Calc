@@ -44,7 +44,7 @@ def get_trace_thickness(exterior_layer):
     return thickness_m
 
 
-def inner_resistance_from_front_resistance(front_resistance):
+def interior_resistance_from_front_resistance(front_resistance):
     return (
         (config.getfloat("Resistance") - 2 * front_resistance) /
         (config.getint("NumberOfLayers") - 2)

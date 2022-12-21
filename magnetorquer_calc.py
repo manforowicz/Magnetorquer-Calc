@@ -101,7 +101,7 @@ def spiral_of_resistance(resistance, outer_layer):
 
 
 def find_total_area_sum_from_front_resistance(front_resistance):
-    inner_resistance = inner_resistance_from_front_resistance(front_resistance)
+    inner_resistance = interior_resistance_from_front_resistance(front_resistance)
     inner_layers = config.getint("NumberOfLayers") - 2
 
     area_sum = 0

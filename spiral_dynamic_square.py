@@ -46,6 +46,7 @@ def real_radius_proportional(multiplier, radius):
 
 # Actual program
 
+
 def spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=False):
 
     # Note: Starts on the outside, and spirals inwards
@@ -65,7 +66,6 @@ def spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=Fals
     prev_r = outer_radius
 
     current_width = trace_width_func(trace_width_multiplier, current_r)
-    current_r -= 0.5 * current_width
 
     while current_r + 0.5 * current_width > inner_radius:
 
@@ -73,7 +73,7 @@ def spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=Fals
         next_width = trace_width_func(trace_width_multiplier, next_r)
         next_r -= 0.5 * next_width
 
-        length = 8*current_r + (prev_r - current_r) - (current_r - next_r)
+        length = 6*current_r + prev_r + next_r
         area_sum += 0.5 * length * current_r
         ohms += get_ohms_per_mm(current_width, exterior) * length
         coils += 1
@@ -94,15 +94,15 @@ def spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=Fals
     area_sum_m = area_sum * 1e-6
 
     if return_shape:
-        return area_sum_m, ohms, coils, shape
+        return shape
     else:
         return area_sum_m, ohms, coils
 
 
-def spiral_of_resistance(ohms, exterior, trace_width_func=real_radius_proportional):
+def spiral_of_resistance(ohms, exterior, trace_width_func=real_radius_proportional, return_shape=False):
 
     def func(trace_width_multiplier):
         return spiral(trace_width_multiplier, trace_width_func, exterior)[1] - ohms
 
     trace_width_multiplier = optimize.brentq(func, 1e-6, 1e6)
-    return spiral(trace_width_multiplier, trace_width_func, exterior)
+    return spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=return_shape)

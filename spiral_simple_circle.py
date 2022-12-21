@@ -64,7 +64,7 @@ def spiral(
         area_sum (float): The total area-sum of the spiral
     '''
     a = outer_radius
-    b = spacing / (2 * math.pi)
+    b = spacing  / (2 * math.pi)
 
     if b == 0:  # If b is 0 we have a perfect circle
         theta = length / a  # Circle arc length formula
@@ -149,16 +149,19 @@ class TestRoundSpiral(unittest.TestCase):
     # Circle with 2 coils.
     def test_with_two_coils(self):
         result = spiral(4 * math.pi, 0, 1)
-        self.assertAlmostEqual(result[0], 2)
+        self.assertAlmostEqual(result[0], 2 * math.pi * 1e-6)
         self.assertAlmostEqual(result[1], 1)
-        self.assertAlmostEqual(result[2], 2 * math.pi)
+        self.assertAlmostEqual(result[2], 2)
 
     # Compare with results received from https://planetcalc.com/9063/
 
     def test_example_1(self):
         result = spiral(100, 1, 10)
-        self.assertAlmostEqual(result[0], 1.7432534773931)
+        self.assertAlmostEqual(result[0], 457.73601090254937 * 1e-6)
         self.assertAlmostEqual(result[1], 8.25674652261)
 
         # self-calculated. (question validity)
-        self.assertAlmostEqual(result[2], 457.73601090254937)
+        self.assertAlmostEqual(result[2], 1.74325347739317)
+
+if __name__ == "__main__":
+    unittest.main()
