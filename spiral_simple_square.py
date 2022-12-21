@@ -2,7 +2,7 @@ import math
 from pathlib import Path
 from configparser import ConfigParser
 import unittest
-from unit_conversions import *
+from helper_conversions import *
 from scipy import optimize
 
 # Read configuration

@@ -2,7 +2,7 @@ import math
 from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
-from unit_conversions import *
+from helper_conversions import *
 from output_KiCad_dynamic_spiral import SpiralShape
 
 '''
