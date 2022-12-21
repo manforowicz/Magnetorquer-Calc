@@ -73,7 +73,7 @@ def spiral(
 
     inner_radius = r
 
-    area_sum = area_sum * 10e-6
+    area_sum = area_sum * 1e-6
 
     return area_sum, inner_radius, num_of_coils
 

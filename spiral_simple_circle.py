@@ -83,7 +83,7 @@ def spiral(
     # Calculate and return other properties from theta
     num_of_coils = theta / (2 * math.pi)
     inner_radius = a - b*theta
-    area_sum = area_sum_of_round_spiral(a, b, theta) * 10e-6
+    area_sum = area_sum_of_round_spiral(a, b, theta) * 1e-6
 
     return area_sum, inner_radius, num_of_coils
 
