@@ -14,19 +14,19 @@ config = config['Configuration']
 
 def get_spiral(spacing, num_of_coils, trace_width, layer):
 
-    reverse = layer % 2 == 1
+    reverse = (layer % 2 == 1)
 
     outer_radius = config.getfloat("OuterRadius")
 
     out = ""
     for i in range(num_of_coils):
-        r = outer_radius - i * spacing
+        radius = outer_radius - i * spacing
 
-        a = (outer_radius - (r + spacing), outer_radius - r)
-        b = (outer_radius + r, outer_radius - r)
-        c = (outer_radius + r, outer_radius + r)
-        d = (outer_radius - r, outer_radius + r)
-        e = (outer_radius - r, outer_radius - (r-spacing))
+        a = (-spacing-radius, -radius)
+        b = (radius, -radius)
+        c = (radius, radius)
+        d = (-radius, radius)
+        e = (-radius, spacing-radius)
 
         out += get_segment(*a, *b, trace_width, layer, reverse)
         out += get_segment(*b, *c, trace_width, layer, reverse)
@@ -37,7 +37,14 @@ def get_spiral(spacing, num_of_coils, trace_width, layer):
 
 
 def get_segment(x1, y1, x2, y2, width, layer, reverse):
-    net = 0
+    net = 1
+
+    offset = config.getfloat("OuterRadius") + 20
+
+    x1 += offset
+    y1 += offset
+    x2 += offset
+    y2 += offset
 
     if reverse:
         x1, y1 = y1, x1
