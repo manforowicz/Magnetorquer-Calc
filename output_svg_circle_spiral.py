@@ -2,9 +2,9 @@ from pathlib import Path
 import numpy as np
 import math
 
-#### NOTES ####
-# This is only a helper program that outputs an SVG file
-# It is used to draw an optimized spiral from a different program
+'''
+Functions that can output an svg of a circular spiral
+'''
 
 
 # Stores a simple point

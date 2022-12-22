@@ -2,7 +2,7 @@ from pathlib import Path
 from configparser import ConfigParser
 
 '''
-Functions 
+Helper Conversion Functions
 '''
 
 # Read configuration
@@ -11,9 +11,12 @@ config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
 
-def get_ohms_per_mm(trace_width_mm, exterior_layer):
+def get_ohms_per_mm(trace_width_mm: float, exterior_layer: bool) -> float:
     '''
-    Returns ohms per mm of trace length of given thickness
+    Parameters:
+        - Width of PCB trace in mm
+        - Boolean whether the trace is on PCB exterior layer
+    Returns: ohms per mm of trace length
     '''
     if trace_width_mm <= 0:
         return float("nan")
@@ -29,9 +32,10 @@ def get_ohms_per_mm(trace_width_mm, exterior_layer):
 
 def get_trace_thickness(exterior_layer):
     '''
-    Returns trace thickness in meters
+    Parameters:
+        - Boolean whether the trace is on PCB exterior layer
+    Returns: Thickness of trace in meters
     '''
-
     if exterior_layer:
         oz_thickness = config.getfloat("OuterLayerThickness")
     else:
@@ -44,15 +48,26 @@ def get_trace_thickness(exterior_layer):
     return thickness_m
 
 
-def interior_resistance_from_front_resistance(front_resistance):
+def int_ohms_from_ext_ohms(exterior_resistance):
+    '''
+    Parameters:
+        - Resistance of spiral on the front layer
+    Returns: Resistance of spiral on each inner layer that meets total resistance goal
+    '''
     return (
-        (config.getfloat("Resistance") - 2 * front_resistance) /
+        (config.getfloat("Resistance") - 2 * exterior_resistance) /
         (config.getint("NumberOfLayers") - 2)
     )
 
 
 def spacing_from_length(length_mm, resistance, exterior):
-
+    '''
+    Parameters:
+        - Length of trace in mm
+        - Desired resistance in ohms
+        - Boolean whether the trace is on PCB exterior
+    Returns: Total spacing between centers of adjacent traces in mm
+    '''
     thickness_m = get_trace_thickness(exterior)
 
     p = config.getfloat("CopperResistivity")

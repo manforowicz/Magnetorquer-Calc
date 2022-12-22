@@ -3,6 +3,11 @@ import numpy as np
 from pathlib import Path
 from configparser import ConfigParser
 
+
+'''
+Functions that can output a KiCad file of a variable trace width square spiral
+'''
+
 # Read configuration
 config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
@@ -62,12 +67,6 @@ def get_segment(width, layer, x1, y1, x2, y2):
         y2,
         width, layer, net)
 
-def get_via(x, y):
-    net = 0
-    size = config.getfloat("ViaSize")
-    drill = config.getfloat("ViaDrill")
-
-    return f"(via (at {x:.4f} {y:.4f}) (size {size:.4f}) (drill {drill:.4f}) (layers F.Cu B.Cu) (net {net}))\n"
 
 
 def get_layer_name(layer):
@@ -99,4 +98,5 @@ def save_spiral(exterior_shape, interior_shape):
     print("Saved optimal spiral in KiCad_spiral.txt")
     print("Paste its entire content just before the final closing parantheses of your *.kicad_pcb file")
     print("Save the file, and open KiCad. Your spiral should appear in the PCB editor.")
+    print("Be sure to add through-vias connecting the different spiral layers.")
     

@@ -6,7 +6,7 @@ from helper_conversions import *
 from output_KiCad_dynamic_spiral import SpiralShape
 
 '''
-Helper functions that calculate geometric properties of dynamic spirals
+Functions that define a variable trace width square spiral
 '''
 
 # Read configuration
@@ -51,7 +51,7 @@ def spiral(trace_width_multiplier, trace_width_func, exterior, return_shape=Fals
 
     # Note: Starts on the outside, and spirals inwards
 
-    inner_radius = config.getfloat("InnerRadius")
+    inner_radius = 5
     outer_radius = config.getfloat("OuterRadius")
     gap = config.getfloat("GapBetweenTraces")
 

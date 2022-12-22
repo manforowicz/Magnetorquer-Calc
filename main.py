@@ -3,37 +3,66 @@ from spiral_simple_square import spiral_of_resistance
 from scipy import optimize
 import output_KiCad_square_spiral
 
+'''
+Main program that outputs an optimized square magnetorquer given
+constraints from config.ini
+'''
 
-def get_total_area_sum_from_front_resistance(front_resistance):
-    interior_resistance = interior_resistance_from_front_resistance(front_resistance)
-    inner_layers = config.getint("NumberOfLayers") - 2
+# Read configuration
+config = ConfigParser()
+config.read(Path(__file__).with_name('config.ini'))
+config = config['Configuration']
 
-    area_sum = 0
-    area_sum += 2 * spiral_of_resistance(front_resistance, True)[0]
-    area_sum += inner_layers * spiral_of_resistance(interior_resistance, False)[0]
+
+def total_area_sum_from_ext_ohms(ext_ohms):
+    int_ohms = int_ohms_from_ext_ohms(ext_ohms)
+    int_layers = config.getint("NumberOfLayers") - 2
+
+    area_sum = 2 * spiral_of_resistance(ext_ohms, True)[0]
+    area_sum += int_layers * spiral_of_resistance(int_ohms, False)[0]
     return area_sum
+
 
 def get_optimal_front_resistance():
     front_resistance = optimize.minimize_scalar(
-        lambda r: -get_total_area_sum_from_front_resistance(r),
+        lambda r: -total_area_sum_from_ext_ohms(r),
         bounds=(0, config.getfloat("Resistance")/2),
         method='bounded'
     ).x
+
     return front_resistance
 
 
-def get_optimal_magnetorquer():
-    front_resistance = get_optimal_front_resistance()
-    interior_resistance = interior_resistance_from_front_resistance(front_resistance)
-
-    exterior = spiral_of_resistance(front_resistance, True)
-    interior = spiral_of_resistance(interior_resistance, False)
-
-    output_KiCad_square_spiral.save_magnetorquer(exterior[3], exterior[2], interior[3], interior[2])
-
-    
+def print_about_spiral(spiral, resistance):
+    s = spiral
+    print(f'''  Area sum: {s[0]:.4f} m^2
+    Inner radius: {s[1]:.4f} mm
+    Number of coils: {s[2]:.4f}
+    Length of trace: {s[4]:.4f} mm
+    Resistance: {resistance:.4f} ohms
+    ''')
 
 
-get_optimal_magnetorquer()
+if __name__ == "__main__":
 
-print(get_optimal_front_resistance())
+    ext_ohms = get_optimal_front_resistance()
+    int_ohms = int_ohms_from_ext_ohms(ext_ohms)
+
+    exterior = spiral_of_resistance(ext_ohms, True)
+    interior = spiral_of_resistance(int_ohms, False)
+
+    total_area_sum = total_area_sum_from_ext_ohms(ext_ohms)
+
+    print("Optimal properties calculated given config.ini:")
+
+    print(f"Total area-sum: {total_area_sum:.4f} m^2\n")
+
+    print("Properties per each of the 2 external spirals:")
+    print_about_spiral(exterior, ext_ohms)
+
+    interior_layers = config.getint("NumberOfLayers") - 2
+    print(f"Properties per each of the {interior_layers:d} internal spirals:")
+    print_about_spiral(interior, int_ohms)
+
+    output_KiCad_square_spiral.save_magnetorquer(
+        exterior[3], exterior[2], interior[3], interior[2])

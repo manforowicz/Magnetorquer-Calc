@@ -2,6 +2,10 @@ from pathlib import Path
 from configparser import ConfigParser
 
 
+'''
+Functions that can output a KiCad file of a constant trace width square spiral
+'''
+
 # Read configuration
 config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
@@ -52,23 +56,21 @@ def get_segment(x1, y1, x2, y2, width, layer, reverse):
 def save_magnetorquer(exterior_spacing, exterior_num_of_coils,
                       interior_spacing, interior_num_of_coils,):
 
-
-
     exterior_width = exterior_spacing - config.getfloat("GapBetweenTraces")
     interior_width = interior_spacing - config.getfloat("GapBetweenTraces")
 
-
     num_of_layers = config.getint('NumberOfLayers')
-
 
     out = ""
 
-    out += get_spiral(exterior_spacing, exterior_num_of_coils, exterior_width, 0)
+    out += get_spiral(exterior_spacing,
+                      exterior_num_of_coils, exterior_width, 0)
     for i in range(num_of_layers-2):
-        out += get_spiral(interior_spacing, interior_num_of_coils, interior_width, i+1)
-    
-    out += get_spiral(exterior_spacing, exterior_num_of_coils, exterior_width, num_of_layers-1)
+        out += get_spiral(interior_spacing,
+                          interior_num_of_coils, interior_width, i+1)
 
+    out += get_spiral(exterior_spacing, exterior_num_of_coils,
+                      exterior_width, num_of_layers-1)
 
     p = Path(__file__).with_name('KiCad_spiral.txt')
     f = open(p, "w")
@@ -78,3 +80,4 @@ def save_magnetorquer(exterior_spacing, exterior_num_of_coils,
     print("Saved optimal spiral in KiCad_spiral.txt")
     print("Paste its entire content just before the final closing parantheses of your *.kicad_pcb file")
     print("Save the file, and open KiCad. Your spiral should appear in the PCB editor.")
+    print("Be sure to add through-vias connecting the different spiral layers.")

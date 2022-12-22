@@ -1,11 +1,15 @@
-from spiral_dynamic_square import *
+from spiral_simple_square import *
 import matplotlib.pyplot as plt
 import numpy as np
 
+'''
+Plots graph that shows how magnetic moment varies with resistance
+given constant heat generation
+'''
 
 def get_moment(watts, resistance):
     
-    area_sum = spiral_of_resistance(resistance, True, radius_proportional)[0]
+    area_sum = spiral_of_resistance(resistance, True)[0]
 
     current = math.sqrt(watts / resistance)
 
@@ -13,20 +17,28 @@ def get_moment(watts, resistance):
 
 
 
-def get_data(ohms_list, func):
+def get_data(ohms_list):
     return [get_moment(0.5, ohms) for ohms in ohms_list]
 
 
-# Create the figure and the line that we will manipulate
-fig, ax = plt.subplots()
+if __name__ == "__main__":
 
-# Draw the initial lines
-ohms_list = np.linspace(1, 100, 100)
-line, = ax.plot(ohms_list, get_data(ohms_list, radius_proportional), '-o', label="trace_proporitional")
+    # Create the figure and the line that we will manipulate
+    fig, ax = plt.subplots()
 
-# Add all the labels
-ax.set_xlabel('Ohms')
-ax.set_ylabel('Magnetic Moment')
-ax.legend()
+    # Draw the initial lines
+    ohms_list = np.linspace(1, 100, 100)
+    data = get_data(ohms_list)
 
-plt.show()
+    line, = ax.plot(ohms_list, data, '-o', label="trace_proporitional")
+
+
+    plt.xlim([0, 1.1*max(ohms_list)])
+    plt.ylim([0, 1.1*max(data)])
+
+    # Add all the labels
+    ax.set_xlabel('Ohms')
+    ax.set_ylabel('Magnetic Moment')
+    ax.legend()
+
+    plt.show()

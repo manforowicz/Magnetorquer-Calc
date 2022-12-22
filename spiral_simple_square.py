@@ -5,6 +5,11 @@ import unittest
 from helper_conversions import *
 from scipy import optimize
 
+
+'''
+Functions that define a constant trace width square spiral
+'''
+
 # Read configuration
 config = ConfigParser()
 config.read(Path(__file__).with_name('config.ini'))
@@ -121,21 +126,12 @@ class TestSquareSpiral(unittest.TestCase):
         self.assertAlmostEqual(result[1], 1)
         self.assertAlmostEqual(result[2], 2)
 
-    # Draw it out to confirm!!
-
-    def test_example_spiral_1(self):
-
-        result = spiral(24, 1, 2)
-        self.assertAlmostEqual(result[0], 19 * 1e-6)
-        self.assertAlmostEqual(result[1], 1)
-        self.assertAlmostEqual(result[2], 2)
-
     # Draw it out to confirm!
 
     def test_example_spiral_2(self):
 
         result = spiral(4, 1, 2)
-        self.assertAlmostEqual(result[0], 3 * 1e-6)
+        self.assertAlmostEqual(result[0], 4 * 1e-6)
         self.assertAlmostEqual(result[1], 2)
         self.assertAlmostEqual(result[2], 1)
 

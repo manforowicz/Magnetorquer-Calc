@@ -4,7 +4,12 @@ from scipy import optimize
 from pathlib import Path
 from configparser import ConfigParser
 import unittest
-from unit_conversions import *
+from helper_conversions import *
+
+'''
+Functions that define a constant trace width circular spiral
+'''
+
 
 # Read configuration
 config = ConfigParser()
@@ -160,7 +165,7 @@ class TestRoundSpiral(unittest.TestCase):
         self.assertAlmostEqual(result[0], 457.73601090254937 * 1e-6)
         self.assertAlmostEqual(result[1], 8.25674652261)
 
-        # self-calculated. (question validity)
+        # self-calculated.
         self.assertAlmostEqual(result[2], 1.74325347739317)
 
 if __name__ == "__main__":
