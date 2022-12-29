@@ -5,6 +5,7 @@ import numpy as np
 '''
 Plots graph that shows how magnetic moment varies with resistance
 given constant heat generation
+
 '''
 
 def get_moment(watts, resistance):
@@ -18,7 +19,7 @@ def get_moment(watts, resistance):
 
 
 def get_data(ohms_list):
-    return [get_moment(0.5, ohms) for ohms in ohms_list]
+    return [get_moment(0.25, ohms) for ohms in ohms_list]
 
 
 if __name__ == "__main__":
@@ -27,10 +28,12 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
 
     # Draw the initial lines
-    ohms_list = np.linspace(1, 100, 100)
+    ohms_list = np.linspace(1, 40, 100)
     data = get_data(ohms_list)
 
     line, = ax.plot(ohms_list, data, '-o', label="trace_proporitional")
+
+    ax.set_title("assumes 0.25 watt power for 1 magnetorquer layer")
 
 
     plt.xlim([0, 1.1*max(ohms_list)])
