@@ -37,7 +37,7 @@ def get_spiral(spacing, num_of_coils, trace_width, layer):
 
 
 def get_segment(x1, y1, x2, y2, width, layer, reverse):
-    net = 1
+    net = 0
 
     offset = config.getfloat("OuterRadius") + 20
 

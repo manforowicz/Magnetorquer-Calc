@@ -34,9 +34,6 @@ def spiral(
         area_sum (float): The total area-sum of the spiral
     '''
     r = outer_radius
-    s = spacing
-
-
     area_sum = -0.5 * spacing * r
     length += spacing
 
@@ -45,11 +42,11 @@ def spiral(
         num_of_coils += 1
         area_sum += 4 * r ** 2
         length -= 8 * r
-        r -= s
+        r -= spacing
         if r < 0:
             return math.nan, math.nan, math.nan
     
-    r += s
+    r += spacing
 
     area_sum -= -length * r * 0.5
 
