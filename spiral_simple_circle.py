@@ -7,6 +7,7 @@ import unittest
 from helper_conversions import *
 
 '''
+EXPERIMENTAL
 Functions that define a constant trace width circular spiral
 '''
 

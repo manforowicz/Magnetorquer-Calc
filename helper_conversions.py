@@ -30,11 +30,11 @@ def get_ohms_per_mm(trace_width_mm: float, exterior_layer: bool) -> float:
     return ohms_per_mm
 
 
-def get_trace_thickness(exterior_layer):
+def get_trace_thickness(exterior_layer: bool) -> float:
     '''
     Parameters:
         - Boolean whether the trace is on PCB exterior layer
-    Returns: Thickness of trace in meters
+    Returns: Thickness of trace (in meters)
     '''
     if exterior_layer:
         oz_thickness = config.getfloat("OuterLayerThickness")
@@ -48,11 +48,11 @@ def get_trace_thickness(exterior_layer):
     return thickness_m
 
 
-def int_ohms_from_ext_ohms(exterior_resistance):
+def int_ohms_from_ext_ohms(exterior_resistance: float) -> float:
     '''
     Parameters:
-        - Resistance of spiral on the front layer
-    Returns: Resistance of spiral on each inner layer that meets total resistance goal
+        - Resistance per spiral on the exterior layer
+    Returns: Resistance (in ohms) per inner spiral required to meet total resistance config
     '''
     return (
         (config.getfloat("Resistance") - 2 * exterior_resistance) /
@@ -60,13 +60,13 @@ def int_ohms_from_ext_ohms(exterior_resistance):
     )
 
 
-def spacing_from_length(length_mm, resistance, exterior):
+def spacing_from_length(length_mm: float, resistance: float, exterior: bool) -> float:
     '''
     Parameters:
         - Length of trace in mm
         - Desired resistance in ohms
         - Boolean whether the trace is on PCB exterior
-    Returns: Total spacing between centers of adjacent traces in mm
+    Returns: Total spacing (in mm) between centers of adjacent traces
     '''
     thickness_m = get_trace_thickness(exterior)
 
@@ -74,4 +74,4 @@ def spacing_from_length(length_mm, resistance, exterior):
 
     trace_width_mm = (p * length_mm) / (thickness_m * resistance)
 
-    return trace_width_mm + config.getfloat("GapBetweenTraces")  # Millimeters
+    return trace_width_mm + config.getfloat("GapBetweenTraces")

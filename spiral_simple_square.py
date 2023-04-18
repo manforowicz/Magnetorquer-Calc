@@ -5,7 +5,6 @@ import unittest
 from helper_conversions import *
 from scipy import optimize
 
-
 '''
 Functions that define a constant trace width square spiral
 '''
@@ -45,7 +44,7 @@ def spiral(
         r -= spacing
         if r < 0:
             return math.nan, math.nan, math.nan
-    
+
     r += spacing
 
     area_sum -= -length * r * 0.5
@@ -54,9 +53,6 @@ def spiral(
     return area_sum * 1e-6, inner_radius, num_of_coils
 
 
-
-# Returns max trace length physically possible.
-# Takes outer radius and a function that defines spacing
 def max_trace_length(resistance, outer_layer):
     '''
     Calculates the maximum length of wire that can fit on the spiral.
@@ -74,7 +70,7 @@ def max_trace_length(resistance, outer_layer):
 
     '''
     lower = 0
-    upper = 1e6  # TODO: Algorithmatize this hard coded value
+    upper = 1e8  # TODO: Algorithmatize this hard coded value
 
     while upper - lower > upper*0.001:
 
@@ -91,7 +87,22 @@ def max_trace_length(resistance, outer_layer):
     return max_length
 
 
-def spiral_of_resistance(resistance, outer_layer):
+def spiral_of_resistance(resistance: float, outer_layer: bool):
+    '''
+    Calculates a single-layer spiral that maximizes area-sum given a specific resistance
+
+    Parameters:
+        resistance (float): the desired resistance (in ohms) of the spiral
+        outer_layer (bool): whether the spiral is on an exterior layer
+
+    Returns:
+        num_of_coils (float): The number of coils in the spiral
+        inner_radius (float): The inner radius of the spiral
+        area_sum (float): The total area-sum of the spiral
+        spacing (float): The distance (in mm) from one trace center to another
+        length (float): The total length of the trace (in mm)
+
+    '''
 
     # Dummy function to meet requirements of `optimize.minimize_scalar`
     def neg_area_sum_from_length(length):
@@ -110,7 +121,6 @@ def spiral_of_resistance(resistance, outer_layer):
     spacing = spacing_from_length(length, resistance, outer_layer)
     optimal = spiral(length, spacing)
 
-    # Return coil spacing, number of coils, and area-sum
     return *optimal, spacing, length
 
 
@@ -131,6 +141,7 @@ class TestSquareSpiral(unittest.TestCase):
         self.assertAlmostEqual(result[0], 4 * 1e-6)
         self.assertAlmostEqual(result[1], 2)
         self.assertAlmostEqual(result[2], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

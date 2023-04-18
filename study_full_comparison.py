@@ -6,6 +6,7 @@ import spiral_simple_circle
 import spiral_simple_square
 
 '''
+EXPERIMENTAL
 Plots graph that compares resistance to area sums of different spiral types
 '''
 

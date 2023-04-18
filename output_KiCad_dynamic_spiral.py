@@ -5,6 +5,7 @@ from configparser import ConfigParser
 
 
 '''
+EXPERIMENTAL
 Functions that can output a KiCad file of a variable trace width square spiral
 '''
 

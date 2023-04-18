@@ -6,6 +6,7 @@ from helper_conversions import *
 from output_KiCad_dynamic_spiral import SpiralShape
 
 '''
+EXPERIMENTAL
 Functions that define a variable trace width square spiral
 '''
 

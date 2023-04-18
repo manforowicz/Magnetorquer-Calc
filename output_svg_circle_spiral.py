@@ -3,9 +3,9 @@ import numpy as np
 import math
 
 '''
+EXPERIMENTAL
 Functions that can output an svg of a circular spiral
 '''
-
 
 # Stores a simple point
 class Point:

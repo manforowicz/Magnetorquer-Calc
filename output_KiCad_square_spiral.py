@@ -3,7 +3,7 @@ from configparser import ConfigParser
 
 
 '''
-Functions that can output a KiCad file of a constant trace width square spiral
+Functions that output a KiCad file of a constant trace width square magnetorquer
 '''
 
 # Read configuration
@@ -12,7 +12,7 @@ config.read(Path(__file__).with_name('config.ini'))
 config = config['Configuration']
 
 
-def get_spiral(spacing, num_of_coils, trace_width, layer):
+def get_spiral(spacing, num_of_coils, trace_width, layer) -> str:
 
     reverse = (layer % 2 == 1)
 
@@ -36,7 +36,7 @@ def get_spiral(spacing, num_of_coils, trace_width, layer):
     return out
 
 
-def get_segment(x1, y1, x2, y2, width, layer, reverse):
+def get_segment(x1, y1, x2, y2, width, layer, reverse) -> str:
     net = 0
 
     offset = config.getfloat("OuterRadius") + 20
@@ -61,7 +61,16 @@ def get_segment(x1, y1, x2, y2, width, layer, reverse):
 
 
 def save_magnetorquer(exterior_spacing, exterior_num_of_coils,
-                      interior_spacing, interior_num_of_coils,):
+                      interior_spacing, interior_num_of_coils):
+    '''
+    Saves the given spiral to "KiCad_spiral.txt".
+
+    Parameters:
+        exterior_spacing: Spacing between centers of adjacent traces (in mm) on exterior layers
+        exterior_num_of_coils: Number of coils per exterior layer
+        interior_spacing: Spacing between centers of adjacent traces (in mm) on interior layers
+        interior_num_of_coils: Number of coils per interior layer
+    '''
 
     exterior_width = exterior_spacing - config.getfloat("GapBetweenTraces")
     interior_width = interior_spacing - config.getfloat("GapBetweenTraces")

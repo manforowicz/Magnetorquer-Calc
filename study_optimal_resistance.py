@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 '''
+EXPERIMENTAL
 Plots graph that shows how magnetic moment varies with resistance
-given constant heat generation
-
+given constant watts of heat generation
 '''
 
 def get_moment(watts, resistance):

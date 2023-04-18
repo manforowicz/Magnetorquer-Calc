@@ -5,7 +5,8 @@ import spiral_simple_circle
 import spiral_simple_square
 
 '''
-Plots graph that compares square magnetorquers to circular ones
+EXPERIMENTAL
+Plots graph that compares square to circular magnetorquers
 '''
 
 
