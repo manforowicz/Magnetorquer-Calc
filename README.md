@@ -30,11 +30,6 @@ The other scripts are simply part of my research to find the optimal magnetorque
 You can learn more about my reserach process by running the `study_*.py` files.
 They require the following additional dependencies: matplotlib, numpy. Run `pip3 install matplotlib numpy`
 
-## Learn More
-
-I may publish a scientific paper about this magnetorquer optimization process in the future.
-For now, you can read the code comments to get a rough idea of its operation.
-
 ## Real World Applications
 
 I maded a related [video](https://youtu.be/cGJYCe6mGR0) that briefly introduces
